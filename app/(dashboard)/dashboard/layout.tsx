@@ -1,25 +1,30 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import jwt from "jsonwebtoken";
+import type { ReactNode } from "react";
 
-export default async function DashboardLayout({
+import Sidebar from "@/components/dashboard/sidebar/Sidebar";
+import Navbar from "@/components/dashboard/navbar/Navbar";
+
+interface Props {
+  children: ReactNode;
+}
+
+export default function DashboardLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
-  const cookieStore = await cookies();
+}: Props) {
+  return (
+    <div className="min-h-screen bg-slate-100">
+      {/* Sidebar */}
+      <Sidebar />
 
-  const token = cookieStore.get("token")?.value;
+      {/* Main Content */}
+      <div className="ml-72 min-h-screen">
+        {/* Navbar */}
+        <Navbar />
 
-  if (!token) {
-    redirect("/login");
-  }
-
-  try {
-    jwt.verify(token, process.env.JWT_SECRET!);
-  } catch {
-    redirect("/login");
-  }
-
-  return <>{children}</>;
+        {/* Page Content */}
+        <main className="px-8 pb-8 pt-24">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
 }
