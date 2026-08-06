@@ -1,21 +1,13 @@
 import {
-  BriefcaseBusiness,
-  Building2,
-  GraduationCap,
   Home,
-  LayoutDashboard,
+  Building2,
+  Hospital,
+  GraduationCap,
   Newspaper,
-  Settings,
-  LogOut,
+  Briefcase,
 } from "lucide-react";
 
 export const sidebarMenu = [
-  {
-    title: "Dashboard",
-    icon: LayoutDashboard,
-    href: "/dashboard",
-  },
-
   {
     title: "Home",
     icon: Home,
@@ -41,28 +33,16 @@ export const sidebarMenu = [
         href: "/dashboard/home/statistics",
       },
       {
-        title: "Facilities Overview",
-        href: "/dashboard/home/facilities-overview",
-      },
-      {
-        title: "Latest Notice",
-        href: "/dashboard/home/latest-notice",
-      },
-      {
         title: "Gallery",
         href: "/dashboard/home/gallery",
       },
       {
-        title: "Testimonials",
-        href: "/dashboard/home/testimonials",
+        title: "Notice",
+        href: "/dashboard/home/notice",
       },
       {
-        title: "Partners",
-        href: "/dashboard/home/partners",
-      },
-      {
-        title: "FAQ",
-        href: "/dashboard/home/faq",
+        title: "Contact",
+        href: "/dashboard/home/contact",
       },
     ],
   },
@@ -72,15 +52,11 @@ export const sidebarMenu = [
     icon: Building2,
     items: [
       {
-        title: "About UAMC Page",
-        href: "/dashboard/about",
-      },
-      {
         title: "Overview",
         href: "/dashboard/about/overview",
       },
       {
-        title: "History of UAMC",
+        title: "History",
         href: "/dashboard/about/history",
       },
       {
@@ -88,8 +64,8 @@ export const sidebarMenu = [
         href: "/dashboard/about/vision-mission",
       },
       {
-        title: "Aim & Objectives",
-        href: "/dashboard/about/aim-objectives",
+        title: "Aim & Objective",
+        href: "/dashboard/about/aim-objective",
       },
       {
         title: "Organizational Structure",
@@ -112,12 +88,8 @@ export const sidebarMenu = [
 
   {
     title: "Facilities",
-    icon: Building2,
+    icon: Hospital,
     items: [
-      {
-        title: "Facilities Page",
-        href: "/dashboard/facilities",
-      },
       {
         title: "Hospital Service",
         href: "/dashboard/facilities/hospital-service",
@@ -166,10 +138,6 @@ export const sidebarMenu = [
     icon: GraduationCap,
     items: [
       {
-        title: "Admission Page",
-        href: "/dashboard/admission",
-      },
-      {
         title: "Admission Procedure & Fees",
         href: "/dashboard/admission/procedure-fees",
       },
@@ -182,8 +150,8 @@ export const sidebarMenu = [
         href: "/dashboard/admission/application-form",
       },
       {
-        title: "Admission Results",
-        href: "/dashboard/admission/results",
+        title: "Admission Result",
+        href: "/dashboard/admission/result",
       },
       {
         title: "Online Registration",
@@ -195,66 +163,12 @@ export const sidebarMenu = [
   {
     title: "Notice & Media",
     icon: Newspaper,
-    items: [
-      {
-        title: "Notice",
-        href: "/dashboard/notice-media/notice",
-      },
-      {
-        title: "News",
-        href: "/dashboard/notice-media/news",
-      },
-      {
-        title: "Events",
-        href: "/dashboard/notice-media/events",
-      },
-      {
-        title: "Gallery",
-        href: "/dashboard/notice-media/gallery",
-      },
-      {
-        title: "Video Gallery",
-        href: "/dashboard/notice-media/videos",
-      },
-      {
-        title: "Downloads",
-        href: "/dashboard/notice-media/downloads",
-      },
-    ],
+    href: "/dashboard/notice-media",
   },
 
   {
     title: "Career",
-    icon: BriefcaseBusiness,
-    items: [
-      {
-        title: "Job Circular",
-        href: "/dashboard/career/jobs",
-      },
-      {
-        title: "Apply Online",
-        href: "/dashboard/career/apply",
-      },
-      {
-        title: "Applications",
-        href: "/dashboard/career/applications",
-      },
-      {
-        title: "Career Settings",
-        href: "/dashboard/career/settings",
-      },
-    ],
-  },
-
-  {
-    title: "Settings",
-    icon: Settings,
-    href: "/dashboard/settings",
-  },
-
-  {
-    title: "Logout",
-    icon: LogOut,
-    href: "/logout",
+    icon: Briefcase,
+    href: "/dashboard/career",
   },
 ];

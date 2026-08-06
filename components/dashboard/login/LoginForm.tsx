@@ -52,7 +52,7 @@ export default function LoginForm() {
       router.refresh();
     } catch (error) {
       console.error(error);
-      toast.error("Something went wrong");
+      toast.error("Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -71,34 +71,38 @@ export default function LoginForm() {
       transition={{
         duration: 0.5,
       }}
-      className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-2xl"
+      className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl sm:p-8"
     >
-      {/* Heading */}
+      {/* Logo */}
 
       <div className="mb-8 text-center">
+        <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-teal-600 to-cyan-600 text-white shadow-lg">
+          <Lock size={36} />
+        </div>
+
         <h2 className="text-3xl font-bold text-slate-800">
           Welcome Back
         </h2>
 
-        <p className="mt-2 text-sm text-slate-500">
-          Sign in to continue to the admin dashboard.
+        <p className="mt-2 text-sm leading-6 text-slate-500">
+          Sign in to access the UAMC Admin Dashboard.
         </p>
       </div>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="space-y-5"
+        className="space-y-6"
       >
         {/* Email */}
 
         <div className="relative">
-          <Mail className="absolute left-4 top-[45px] h-5 w-5 text-slate-400" />
+          <Mail className="absolute left-4 top-[46px] h-5 w-5 text-slate-400" />
 
           <LoginInput
             label="Email Address"
             type="email"
             placeholder="admin@gmail.com"
-            className="pl-11"
+            className="pl-12"
             {...register("email", {
               required: "Email is required",
             })}
@@ -109,13 +113,13 @@ export default function LoginForm() {
         {/* Password */}
 
         <div className="relative">
-          <Lock className="absolute left-4 top-[45px] h-5 w-5 text-slate-400" />
+          <Lock className="absolute left-4 top-[46px] h-5 w-5 text-slate-400" />
 
           <LoginInput
             label="Password"
             type={showPassword ? "text" : "password"}
             placeholder="********"
-            className="pl-11 pr-12"
+            className="pl-12 pr-12"
             {...register("password", {
               required: "Password is required",
             })}
@@ -127,7 +131,7 @@ export default function LoginForm() {
             onClick={() =>
               setShowPassword(!showPassword)
             }
-            className="absolute right-4 top-[45px] text-slate-400 hover:text-slate-700"
+            className="absolute right-4 top-[46px] text-slate-400 transition hover:text-slate-700"
           >
             {showPassword ? (
               <EyeOff size={20} />
@@ -137,15 +141,14 @@ export default function LoginForm() {
           </button>
         </div>
 
-        {/* Remember & Forgot */}
+        {/* Remember */}
 
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
           <label className="flex cursor-pointer items-center gap-2 text-slate-600">
             <input
               type="checkbox"
               className="rounded border-slate-300"
             />
-
             Remember Me
           </label>
 
@@ -157,10 +160,14 @@ export default function LoginForm() {
           </button>
         </div>
 
-        {/* Button */}
-
         <LoginButton loading={loading} />
       </form>
+
+      <div className="mt-8 border-t border-slate-200 pt-5 text-center">
+        <p className="text-sm text-slate-500">
+          © 2026 Uttara Adhunik Medical College
+        </p>
+      </div>
     </motion.div>
   );
 }

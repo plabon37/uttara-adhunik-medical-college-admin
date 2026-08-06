@@ -1,21 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown, LucideIcon } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 
 import SidebarItem from "./SidebarItem";
 
-interface ChildItem {
+interface SidebarGroupItem {
   title: string;
   href: string;
 }
 
 interface SidebarGroupProps {
   title: string;
-  icon: React.ElementType;
-  items: ChildItem[];
+  icon: LucideIcon;
+  items: SidebarGroupItem[];
   defaultOpen?: boolean;
+  onItemClick?: () => void;
 }
 
 export default function SidebarGroup({
@@ -23,24 +25,69 @@ export default function SidebarGroup({
   icon: Icon,
   items,
   defaultOpen = false,
+  onItemClick,
 }: SidebarGroupProps) {
-  const [open, setOpen] = useState(defaultOpen);
+  const pathname = usePathname();
+
+  const hasActiveChild = items.some(
+    (item) =>
+      pathname === item.href ||
+      pathname.startsWith(`${item.href}/`)
+  );
+
+  const [manualOpen, setManualOpen] =
+    useState(defaultOpen);
+
+  const open = hasActiveChild || manualOpen;
 
   return (
-    <div className="mb-2">
+    <div className="rounded-2xl">
       {/* Group Button */}
 
       <button
-        onClick={() => setOpen(!open)}
-        className="group flex w-full items-center justify-between rounded-xl px-4 py-3 transition-all duration-300 hover:bg-slate-100"
+        type="button"
+        onClick={() =>
+          setManualOpen((prev) => !prev)
+        }
+        className="
+          group
+          flex
+          w-full
+          items-center
+          justify-between
+          rounded-xl
+          px-4
+          py-3
+          text-left
+          transition-all
+          duration-200
+          hover:bg-slate-100
+        "
       >
         <div className="flex items-center gap-3">
           <Icon
             size={20}
-            className="text-slate-500 transition group-hover:text-teal-600"
+            className={`
+              transition-colors
+              ${
+                open
+                  ? "text-teal-600"
+                  : "text-slate-500 group-hover:text-teal-600"
+              }
+            `}
           />
 
-          <span className="font-medium text-slate-700">
+          <span
+            className={`
+              text-sm
+              font-medium
+              ${
+                open
+                  ? "text-teal-700"
+                  : "text-slate-700"
+              }
+            `}
+          >
             {title}
           </span>
         </div>
@@ -50,7 +97,7 @@ export default function SidebarGroup({
             rotate: open ? 180 : 0,
           }}
           transition={{
-            duration: 0.25,
+            duration: 0.2,
           }}
         >
           <ChevronDown
@@ -66,31 +113,35 @@ export default function SidebarGroup({
         {open && (
           <motion.div
             initial={{
-              opacity: 0,
               height: 0,
+              opacity: 0,
             }}
             animate={{
-              opacity: 1,
               height: "auto",
+              opacity: 1,
             }}
             exit={{
-              opacity: 0,
               height: 0,
+              opacity: 0,
             }}
             transition={{
               duration: 0.25,
             }}
             className="overflow-hidden"
           >
-            <div className="mt-2 ml-6 border-l-2 border-slate-200 pl-3 space-y-1">
+            <div className="ml-5 mt-1 border-l-2 border-slate-200 pl-3 space-y-1">
               {items.map((item) => (
-                <SidebarItem
-                  key={item.href}
-                  title={item.title}
-                  href={item.href}
-                  isChild
-                />
-              ))}
+  <div
+    key={item.href}
+    onClick={onItemClick}
+  >
+    <SidebarItem
+      title={item.title}
+      href={item.href}
+      isChild
+    />
+  </div>
+))}
             </div>
           </motion.div>
         )}

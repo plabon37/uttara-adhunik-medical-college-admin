@@ -1,33 +1,70 @@
 "use client";
 
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 
 export default function SidebarHeader() {
   return (
-    <Link href="/dashboard">
-      <motion.div
-        whileHover={{ scale: 1.02 }}
-        transition={{ duration: 0.2 }}
-        className="border-b border-slate-200 px-6 py-6"
+    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white">
+      <Link
+        href="/dashboard"
+        className="block"
       >
-        <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-600 to-cyan-600 text-white shadow-lg">
-            <GraduationCap size={30} />
+        <motion.div
+          whileHover={{
+            scale: 1.02,
+          }}
+          whileTap={{
+            scale: 0.98,
+          }}
+          transition={{
+            duration: 0.2,
+          }}
+          className="flex items-center gap-4 px-6 py-5"
+        >
+          {/* Logo */}
+
+          <div
+            className="
+              flex
+              h-14
+              w-14
+              items-center
+              justify-center
+              overflow-hidden
+              rounded-2xl
+              bg-gradient-to-br
+              from-teal-600
+              to-cyan-500
+              shadow-md
+            "
+          >
+            {/* Replace when logo is available */}
+
+            <Image
+              src="/logo.png"
+              alt="UAMC Logo"
+              width={38}
+              height={38}
+              priority
+              className="object-contain"
+            />
           </div>
 
-          <div>
-            <h2 className="text-lg font-bold text-slate-800 leading-none">
-              UAMC
-            </h2>
+          {/* Text */}
 
-            <p className="mt-1 text-sm text-slate-500">
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-lg font-bold text-slate-800">
+              UAMC
+            </h1>
+
+            <p className="truncate text-sm text-slate-500">
               Admin Dashboard
             </p>
           </div>
-        </div>
-      </motion.div>
-    </Link>
+        </motion.div>
+      </Link>
+    </header>
   );
 }
