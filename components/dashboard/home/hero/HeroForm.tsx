@@ -261,7 +261,24 @@ export default function HeroForm({
         </div>
 
         {/* Right Side */}
+                {/* Live Preview */}
 
+ <div className="space-y-6 xl:sticky xl:top-6 self-start">
+  <HeroPreview
+    tagline={formData.tagline}
+    title={formData.title}
+    highlightText={formData.highlightText}
+    lastTitle={formData.lastTitle}
+    buttonText={formData.buttonText}
+    buttonLink={formData.buttonLink}
+    backgroundImage={formData.backgroundImage}
+    rightTitle={formData.rightTitle}
+    courseOneTitle={formData.courseOneTitle}
+    courseOneDescription={formData.courseOneDescription}
+    courseTwoTitle={formData.courseTwoTitle}
+    courseTwoDescription={formData.courseTwoDescription}
+  />
+</div>
         <div className="space-y-6">
                     {/* Right Card Title */}
 
@@ -396,20 +413,7 @@ export default function HeroForm({
         </div>
                 {/* Live Preview */}
 
-        <HeroPreview
-          tagline={formData.tagline}
-          title={formData.title}
-          highlightText={formData.highlightText}
-          lastTitle={formData.lastTitle}
-          buttonText={formData.buttonText}
-          buttonLink={formData.buttonLink}
-          backgroundImage={formData.backgroundImage}
-          rightTitle={formData.rightTitle}
-          courseOneTitle={formData.courseOneTitle}
-          courseOneDescription={formData.courseOneDescription}
-          courseTwoTitle={formData.courseTwoTitle}
-          courseTwoDescription={formData.courseTwoDescription}
-        />
+        
 
       </div>
 

@@ -23,7 +23,7 @@ export default function HeroPage() {
         <div className="flex flex-col gap-3 sm:flex-row">
 
           <Link
-            href="/dashboard/home"
+            href="/dashboard"
             className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-5 py-3 font-medium text-slate-700 transition hover:bg-slate-100"
           >
             <ArrowLeft size={18} />
