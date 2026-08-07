@@ -17,8 +17,8 @@ export const sidebarMenu = [
         href: "/dashboard/home/hero",
       },
       {
-        title: "Chairman Message",
-        href: "/dashboard/home/chairman-message",
+        title: "Notice Banner",
+        href: "/dashboard/home/notices",
       },
       {
         title: "Principal Message",
