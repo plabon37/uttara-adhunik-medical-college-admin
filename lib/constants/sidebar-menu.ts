@@ -21,8 +21,8 @@ export const sidebarMenu = [
         href: "/dashboard/home/notices",
       },
       {
-        title: "Principal Message",
-        href: "/dashboard/home/principal-message",
+        title: "Publications",
+        href: "/dashboard/home/publications",
       },
       {
         title: "Why Choose UAMC",

@@ -8,20 +8,28 @@ import { PublicationModel } from "@/lib/models/Publication";
 
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  {
+    params,
+  }: {
+    params: Promise<{
+      id: string;
+    }>;
+  }
 ) {
   try {
     await connectToDB();
 
     const { id } = await params;
 
-    const publication = await PublicationModel.findById(id);
+    const publication =
+      await PublicationModel.findById(id);
 
     if (!publication) {
       return NextResponse.json(
         {
           success: false,
-          message: "Publication not found.",
+          message:
+            "Publication not found.",
         },
         {
           status: 404,
@@ -39,12 +47,16 @@ export async function GET(
       }
     );
   } catch (error) {
-    console.error("GET SINGLE PUBLICATION ERROR:", error);
+    console.error(
+      "GET PUBLICATION ERROR:",
+      error
+    );
 
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to fetch publication.",
+        message:
+          "Failed to fetch publication.",
       },
       {
         status: 500,
@@ -59,7 +71,13 @@ export async function GET(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  {
+    params,
+  }: {
+    params: Promise<{
+      id: string;
+    }>;
+  }
 ) {
   try {
     await connectToDB();
@@ -68,20 +86,22 @@ export async function PATCH(
 
     const body = await req.json();
 
-    const publication = await PublicationModel.findByIdAndUpdate(
-      id,
-      body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    const publication =
+      await PublicationModel.findByIdAndUpdate(
+        id,
+        body,
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
 
     if (!publication) {
       return NextResponse.json(
         {
           success: false,
-          message: "Publication not found.",
+          message:
+            "Publication not found.",
         },
         {
           status: 404,
@@ -92,7 +112,8 @@ export async function PATCH(
     return NextResponse.json(
       {
         success: true,
-        message: "Publication updated successfully.",
+        message:
+          "Publication updated successfully.",
         data: publication,
       },
       {
@@ -100,12 +121,16 @@ export async function PATCH(
       }
     );
   } catch (error) {
-    console.error("UPDATE PUBLICATION ERROR:", error);
+    console.error(
+      "UPDATE PUBLICATION ERROR:",
+      error
+    );
 
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to update publication.",
+        message:
+          "Failed to update publication.",
       },
       {
         status: 500,
@@ -120,20 +145,30 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  {
+    params,
+  }: {
+    params: Promise<{
+      id: string;
+    }>;
+  }
 ) {
   try {
     await connectToDB();
 
     const { id } = await params;
 
-    const publication = await PublicationModel.findByIdAndDelete(id);
+    const publication =
+      await PublicationModel.findByIdAndDelete(
+        id
+      );
 
     if (!publication) {
       return NextResponse.json(
         {
           success: false,
-          message: "Publication not found.",
+          message:
+            "Publication not found.",
         },
         {
           status: 404,
@@ -144,19 +179,24 @@ export async function DELETE(
     return NextResponse.json(
       {
         success: true,
-        message: "Publication deleted successfully.",
+        message:
+          "Publication deleted successfully.",
       },
       {
         status: 200,
       }
     );
   } catch (error) {
-    console.error("DELETE PUBLICATION ERROR:", error);
+    console.error(
+      "DELETE PUBLICATION ERROR:",
+      error
+    );
 
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to delete publication.",
+        message:
+          "Failed to delete publication.",
       },
       {
         status: 500,

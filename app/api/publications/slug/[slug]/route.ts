@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { connectToDB } from "@/lib/connectToDB";
 import { PublicationModel } from "@/lib/models/Publication";
 
@@ -8,17 +9,24 @@ import { PublicationModel } from "@/lib/models/Publication";
 
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ slug: string }> }
+  {
+    params,
+  }: {
+    params: Promise<{
+      slug: string;
+    }>;
+  }
 ) {
   try {
     await connectToDB();
 
     const { slug } = await params;
 
-    const publication = await PublicationModel.findOne({
-      slug,
-      isPublished: true,
-    });
+    const publication =
+      await PublicationModel.findOne({
+        slug,
+        isPublished: true,
+      }).lean();
 
     if (!publication) {
       return NextResponse.json(
@@ -32,15 +40,16 @@ export async function GET(
       );
     }
 
-    const response = NextResponse.json(
-      {
-        success: true,
-        data: publication,
-      },
-      {
-        status: 200,
-      }
-    );
+    const response =
+      NextResponse.json(
+        {
+          success: true,
+          data: publication,
+        },
+        {
+          status: 200,
+        }
+      );
 
     response.headers.set(
       "Access-Control-Allow-Origin",
@@ -57,7 +66,8 @@ export async function GET(
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to fetch publication details.",
+        message:
+          "Failed to fetch publication details.",
       },
       {
         status: 500,
