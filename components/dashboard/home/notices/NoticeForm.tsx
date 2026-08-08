@@ -11,10 +11,18 @@ interface NoticeFormProps {
   initialData?: {
     _id?: string;
     title: string;
-    category: string;
+    slug: string;
+    category:
+      | "General Notice"
+      | "Admission Notice"
+      | "Reports"
+      | "Job Circular";
+    description: string;
     pdf: string;
-    order: number;
+    date: string;
+    time: string;
     isPublished: boolean;
+    order: number;
   };
 }
 
@@ -23,39 +31,37 @@ export default function NoticeForm({
 }: NoticeFormProps) {
   const router = useRouter();
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [formData, setFormData] =
-    useState({
-      title:
-        initialData?.title ?? "",
-
-      category:
-        initialData?.category ??
-        "General Notice",
-
-      pdf:
-        initialData?.pdf ?? "",
-
-      order:
-        initialData?.order ?? 1,
-
-      isPublished:
-        initialData?.isPublished ??
-        true,
-    });
+  const [formData, setFormData] = useState({
+    title: initialData?.title ?? "",
+    slug: initialData?.slug ?? "",
+    category:
+      initialData?.category ?? "General Notice",
+    description: initialData?.description ?? "",
+    pdf: initialData?.pdf ?? "",
+    date: initialData?.date
+      ? new Date(initialData.date)
+          .toISOString()
+          .split("T")[0]
+      : "",
+    time: initialData?.time ?? "",
+    isPublished:
+      initialData?.isPublished ?? true,
+    order: initialData?.order ?? 0,
+  });
 
   const handleChange = (
     e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement
+      HTMLInputElement |
+        HTMLTextAreaElement |
+        HTMLSelectElement
     >
   ) => {
     const { name, value } = e.target;
 
     setFormData((prev) => ({
       ...prev,
-
       [name]:
         name === "order"
           ? Number(value)
@@ -63,9 +69,7 @@ export default function NoticeForm({
     }));
   };
 
-  const handlePdfChange = (
-    url: string
-  ) => {
+  const handlePdfChange = (url: string) => {
     setFormData((prev) => ({
       ...prev,
       pdf: url,
@@ -80,56 +84,43 @@ export default function NoticeForm({
     try {
       setLoading(true);
 
-      const endpoint =
-        initialData?._id
-          ? `/api/notices/${initialData._id}`
-          : "/api/notices";
+      const endpoint = initialData?._id
+        ? `/api/notices/${initialData._id}`
+        : "/api/notices";
 
-      const method =
-        initialData?._id
-          ? "PATCH"
-          : "POST";
+      const method = initialData?._id
+        ? "PATCH"
+        : "POST";
 
-      const res = await fetch(
-        endpoint,
-        {
-          method,
+      const res = await fetch(endpoint, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body: JSON.stringify(
-            formData
-          ),
-        }
-      );
-
-      const result =
-        await res.json();
+      const result = await res.json();
 
       if (!res.ok) {
         throw new Error(
           result.message ||
-            "Operation failed"
+            "Operation failed."
         );
       }
 
-      toast.success(
-        result.message
-      );
+      toast.success(result.message);
 
-      router.push(
-        "/dashboard/notices"
-      );
+      router.push("/dashboard/home/notices");
 
       router.refresh();
     } catch (error) {
       console.error(error);
 
       toast.error(
-        "Something went wrong."
+        error instanceof Error
+          ? error.message
+          : "Something went wrong."
       );
     } finally {
       setLoading(false);
@@ -142,20 +133,12 @@ export default function NoticeForm({
       className="space-y-8"
     >
       <div className="grid gap-8 xl:grid-cols-2">
-
-        {/* Left Side */}
+        {/* =========================
+            LEFT SIDE - FORM
+        ========================= */}
 
         <div className="space-y-6">
-
-          {/* PDF Upload */}
-
-          <NoticePdfUpload
-            pdf={formData.pdf}
-            onChange={
-              handlePdfChange
-            }
-          />
-                    {/* Notice Title */}
+          {/* Title */}
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-700">
@@ -168,6 +151,7 @@ export default function NoticeForm({
               value={formData.title}
               onChange={handleChange}
               placeholder="Enter Notice Title"
+              required
               className="
                 w-full
                 rounded-xl
@@ -182,6 +166,39 @@ export default function NoticeForm({
             />
           </div>
 
+          {/* Slug */}
+
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Slug
+            </label>
+
+            <input
+              type="text"
+              name="slug"
+              value={formData.slug}
+              onChange={handleChange}
+              placeholder="notice-slug"
+              required
+              className="
+                w-full
+                rounded-xl
+                border
+                border-slate-300
+                px-4
+                py-3
+                outline-none
+                transition
+                focus:border-teal-600
+              "
+            />
+
+            <p className="mt-2 text-xs text-slate-500">
+              Example:
+              bcps-e-logbook-notice
+            </p>
+          </div>
+
           {/* Category */}
 
           <div>
@@ -193,11 +210,13 @@ export default function NoticeForm({
               name="category"
               value={formData.category}
               onChange={handleChange}
+              required
               className="
                 w-full
                 rounded-xl
                 border
                 border-slate-300
+                bg-white
                 px-4
                 py-3
                 outline-none
@@ -220,14 +239,119 @@ export default function NoticeForm({
               <option value="Job Circular">
                 Job Circular
               </option>
-
-              <option value="Academic Notice">
-                Academic Notice
-              </option>
             </select>
           </div>
 
-          {/* Display Order */}
+          {/* Date */}
+
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Notice Date
+            </label>
+
+            <input
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+              required
+              className="
+                w-full
+                rounded-xl
+                border
+                border-slate-300
+                px-4
+                py-3
+                outline-none
+                transition
+                focus:border-teal-600
+              "
+            />
+          </div>
+
+          {/* Time */}
+
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Notice Time
+            </label>
+
+            <input
+              type="text"
+              name="time"
+              value={formData.time}
+              onChange={handleChange}
+              placeholder="3.40 PM"
+              required
+              className="
+                w-full
+                rounded-xl
+                border
+                border-slate-300
+                px-4
+                py-3
+                outline-none
+                transition
+                focus:border-teal-600
+              "
+            />
+          </div>
+
+          {/* Description */}
+
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Notice Details
+            </label>
+
+            <textarea
+              rows={8}
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Write full notice details..."
+              required
+              className="
+                w-full
+                resize-y
+                rounded-xl
+                border
+                border-slate-300
+                px-4
+                py-3
+                outline-none
+                transition
+                focus:border-teal-600
+              "
+            />
+          </div>
+
+          {/* PDF Upload */}
+
+          <NoticePdfUpload
+            pdf={formData.pdf}
+            onChange={handlePdfChange}
+          />
+        </div>
+
+        {/* =========================
+            RIGHT SIDE
+            LIVE PREVIEW
+        ========================= */}
+
+        <div className="space-y-6 xl:sticky xl:top-6 self-start">
+          <NoticePreview
+            title={formData.title}
+            category={formData.category}
+            description={formData.description}
+            pdf={formData.pdf}
+            date={formData.date}
+            time={formData.time}
+            isPublished={formData.isPublished}
+            order={formData.order}
+          />
+
+          {/* Order */}
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-700">
@@ -236,8 +360,8 @@ export default function NoticeForm({
 
             <input
               type="number"
-              min={1}
               name="order"
+              min={0}
               value={formData.order}
               onChange={handleChange}
               className="
@@ -263,12 +387,15 @@ export default function NoticeForm({
 
             <select
               name="isPublished"
-              value={String(formData.isPublished)}
+              value={String(
+                formData.isPublished
+              )}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
                   isPublished:
-                    e.target.value === "true",
+                    e.target.value ===
+                    "true",
                 }))
               }
               className="
@@ -276,6 +403,7 @@ export default function NoticeForm({
                 rounded-xl
                 border
                 border-slate-300
+                bg-white
                 px-4
                 py-3
                 outline-none
@@ -288,31 +416,29 @@ export default function NoticeForm({
               </option>
 
               <option value="false">
-                Draft
+                Unpublished
               </option>
             </select>
           </div>
-
         </div>
+      </div>
 
-        {/* Right Side */}
+      {/* =========================
+          ACTION BUTTONS
+      ========================= */}
 
-        <div className="space-y-6 xl:sticky xl:top-6 self-start">
-
-          <NoticePreview
-            title={formData.title}
-            category={formData.category}
-            pdf={formData.pdf}
-            isPublished={formData.isPublished}
-          />
-
-        </div>
-              </div>
-
-      {/* Action Buttons */}
-
-      <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">
-
+      <div
+        className="
+          flex
+          flex-col-reverse
+          gap-3
+          border-t
+          border-slate-200
+          pt-6
+          sm:flex-row
+          sm:justify-end
+        "
+      >
         <button
           type="button"
           onClick={() => router.back()}
@@ -356,9 +482,7 @@ export default function NoticeForm({
             ? "Update Notice"
             : "Create Notice"}
         </button>
-
       </div>
-
     </form>
   );
 }

@@ -1,17 +1,6 @@
-import mongoose, { Document, Model, Schema } from "mongoose";
+import { Schema, model, models } from "mongoose";
 
-export interface IPublication extends Document {
-  title: string;
-  slug: string;
-  type: "Journal" | "Tender";
-  pdf: string;
-  isPublished: boolean;
-  order: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const PublicationSchema = new Schema<IPublication>(
+const PublicationSchema = new Schema(
   {
     title: {
       type: String,
@@ -23,19 +12,36 @@ const PublicationSchema = new Schema<IPublication>(
       type: String,
       required: true,
       unique: true,
-      lowercase: true,
       trim: true,
     },
 
-    type: {
+    category: {
       type: String,
-      enum: ["Journal", "Tender"],
-      default: "Journal",
+      required: true,
+      enum: ["Journal", "Tenders"],
+    },
+
+    description: {
+      type: String,
+      required: true,
+      trim: true,
     },
 
     pdf: {
       type: String,
-      default: "",
+      required: true,
+      trim: true,
+    },
+
+    date: {
+      type: Date,
+      required: true,
+    },
+
+    time: {
+      type: String,
+      required: true,
+      trim: true,
     },
 
     isPublished: {
@@ -46,6 +52,7 @@ const PublicationSchema = new Schema<IPublication>(
     order: {
       type: Number,
       default: 0,
+      min: 0,
     },
   },
   {
@@ -53,8 +60,6 @@ const PublicationSchema = new Schema<IPublication>(
   }
 );
 
-const Publication: Model<IPublication> =
-  mongoose.models.Publication ||
-  mongoose.model<IPublication>("Publication", PublicationSchema);
-
-export default Publication;
+export const PublicationModel =
+  models.PublicationModel ||
+  model("PublicationModel", PublicationSchema);

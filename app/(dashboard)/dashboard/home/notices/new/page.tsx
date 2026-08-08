@@ -3,40 +3,38 @@ import { ArrowLeft } from "lucide-react";
 
 import NoticeForm from "@/components/dashboard/home/notices/NoticeForm";
 
-export const metadata = {
-  title: "Create Notice",
-};
-
 export default function NewNoticePage() {
   return (
     <div className="space-y-8">
+      {/* =========================
+          HEADER
+      ========================= */}
 
-      <div className="flex items-center justify-between">
-
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-
           <h1 className="text-3xl font-bold text-slate-800">
-            Create Notice
+            Add Notice
           </h1>
 
           <p className="mt-2 text-slate-500">
-            Add a new notice for the website.
+            Create a new homepage notice.
           </p>
-
         </div>
 
         <Link
-          href="/dashboard/notices"
+          href="/dashboard/home/notices"
           className="
             inline-flex
             items-center
+            justify-center
             gap-2
             rounded-xl
             border
             border-slate-300
             px-5
             py-3
-            font-semibold
+            font-medium
+            text-slate-700
             transition
             hover:bg-slate-100
           "
@@ -45,11 +43,15 @@ export default function NewNoticePage() {
 
           Back
         </Link>
-
       </div>
 
-      <NoticeForm />
+      {/* =========================
+          FORM
+      ========================= */}
 
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <NoticeForm />
+      </div>
     </div>
   );
 }

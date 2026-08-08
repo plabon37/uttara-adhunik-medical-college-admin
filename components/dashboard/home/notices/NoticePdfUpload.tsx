@@ -1,14 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
 import {
   FileText,
+  FileUp,
   Loader2,
   Trash2,
-  Upload,
-  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useRef, useState } from "react";
 
 interface NoticePdfUploadProps {
   pdf: string;
@@ -19,7 +18,8 @@ export default function NoticePdfUpload({
   pdf,
   onChange,
 }: NoticePdfUploadProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef =
+    useRef<HTMLInputElement>(null);
 
   const [uploading, setUploading] =
     useState(false);
@@ -36,6 +36,9 @@ export default function NoticePdfUpload({
         toast.error(
           "Only PDF files are allowed."
         );
+
+        e.target.value = "";
+
         return;
       }
 
@@ -44,6 +47,7 @@ export default function NoticePdfUpload({
       const formData = new FormData();
 
       formData.append("file", file);
+      formData.append("type", "pdf");
 
       const res = await fetch("/api/upload", {
         method: "POST",
@@ -67,29 +71,48 @@ export default function NoticePdfUpload({
         "PDF uploaded successfully."
       );
     } catch (error) {
-      console.error(error);
+      console.error(
+        "PDF UPLOAD ERROR:",
+        error
+      );
 
       toast.error(
-        "Something went wrong."
+        "Something went wrong while uploading PDF."
       );
     } finally {
       setUploading(false);
+
+      if (inputRef.current) {
+        inputRef.current.value = "";
+      }
     }
   };
 
   return (
-    <div className="space-y-4">
-      <label className="block text-sm font-semibold text-slate-700">
+    <div>
+      {/* =========================
+          LABEL
+      ========================= */}
+
+      <label className="mb-2 block text-sm font-semibold text-slate-700">
         Notice PDF
       </label>
+
+      {/* =========================
+          HIDDEN INPUT
+      ========================= */}
 
       <input
         ref={inputRef}
         type="file"
-        accept=".pdf"
+        accept="application/pdf,.pdf"
         hidden
         onChange={handleUpload}
       />
+
+      {/* =========================
+          NO PDF
+      ========================= */}
 
       {!pdf ? (
         <button
@@ -100,7 +123,7 @@ export default function NoticePdfUpload({
           disabled={uploading}
           className="
             flex
-            h-72
+            min-h-48
             w-full
             flex-col
             items-center
@@ -110,6 +133,8 @@ export default function NoticePdfUpload({
             border-dashed
             border-slate-300
             bg-slate-50
+            px-6
+            py-8
             transition
             hover:border-teal-500
             hover:bg-slate-100
@@ -121,7 +146,10 @@ export default function NoticePdfUpload({
             <>
               <Loader2
                 size={42}
-                className="animate-spin text-teal-600"
+                className="
+                  animate-spin
+                  text-teal-600
+                "
               />
 
               <span className="mt-4 text-sm font-medium text-slate-600">
@@ -130,8 +158,8 @@ export default function NoticePdfUpload({
             </>
           ) : (
             <>
-              <Upload
-                size={48}
+              <FileUp
+                size={46}
                 className="text-slate-400"
               />
 
@@ -140,38 +168,53 @@ export default function NoticePdfUpload({
               </span>
 
               <p className="mt-1 text-sm text-slate-500">
-                PDF only
+                PDF files only
               </p>
             </>
           )}
         </button>
       ) : (
+        /* =========================
+           PDF EXISTS
+        ========================= */
+
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex h-72 flex-col items-center justify-center bg-slate-50">
-            <FileText
-              size={70}
-              className="text-red-500"
-            />
+          <div className="flex items-center gap-4 p-5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600">
+              <FileText size={24} />
+            </div>
 
-            <h3 className="mt-5 text-lg font-semibold text-slate-700">
-              PDF Uploaded Successfully
-            </h3>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-slate-800">
+                Notice PDF
+              </p>
 
+              <p className="mt-1 truncate text-xs text-slate-500">
+                PDF uploaded successfully
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between">
             <a
               href={pdf}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
+              className="
+                rounded-xl
+                bg-slate-100
+                px-4
+                py-2
+                text-center
+                text-sm
+                font-semibold
+                text-slate-700
+                transition
+                hover:bg-slate-200
+              "
             >
-              <ExternalLink size={18} />
               View PDF
             </a>
-          </div>
-
-          <div className="flex items-center justify-between border-t border-slate-200 p-4">
-            <p className="truncate text-sm text-slate-600">
-              Notice PDF
-            </p>
 
             <button
               type="button"
@@ -179,6 +222,7 @@ export default function NoticePdfUpload({
               className="
                 flex
                 items-center
+                justify-center
                 gap-2
                 rounded-xl
                 bg-red-50
@@ -192,7 +236,8 @@ export default function NoticePdfUpload({
               "
             >
               <Trash2 size={16} />
-              Remove
+
+              Remove PDF
             </button>
           </div>
         </div>

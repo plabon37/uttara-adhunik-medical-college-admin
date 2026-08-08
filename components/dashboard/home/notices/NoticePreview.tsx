@@ -1,48 +1,68 @@
 "use client";
 
 import {
-  CalendarDays,
   Clock3,
-  FileText,
+  ExternalLink,
 } from "lucide-react";
 
 interface NoticePreviewProps {
   title: string;
-  category: string;
+  category:
+    | "General Notice"
+    | "Admission Notice"
+    | "Reports"
+    | "Job Circular";
+  description: string;
   pdf: string;
+  date: string;
+  time: string;
   isPublished: boolean;
+  order: number;
 }
+
+const categories = [
+  "General Notice",
+  "Admission Notice",
+  "Reports",
+  "Job Circular",
+];
 
 export default function NoticePreview({
   title,
   category,
+  description,
   pdf,
+  date,
+  time,
   isPublished,
+  order,
 }: NoticePreviewProps) {
-  const now = new Date();
+  const formattedDate = date
+    ? new Date(`${date}T00:00:00`)
+    : null;
 
-  const day = now.getDate();
+  const day = formattedDate
+    ? formattedDate.getDate()
+    : "--";
 
-  const month = now.toLocaleDateString(
-    "en-US",
-    {
-      month: "short",
-    }
-  );
+  const month = formattedDate
+    ? formattedDate.toLocaleDateString(
+        "en-US",
+        {
+          month: "short",
+        }
+      )
+    : "---";
 
-  const year = now.getFullYear();
-
-  const time = now.toLocaleTimeString(
-    "en-US",
-    {
-      hour: "numeric",
-      minute: "2-digit",
-    }
-  );
+  const year = formattedDate
+    ? formattedDate.getFullYear()
+    : "----";
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-      {/* Header */}
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      {/* =========================
+          HEADER
+      ========================= */}
 
       <div className="border-b border-slate-200 px-6 py-5">
         <h2 className="text-xl font-bold text-slate-800">
@@ -54,108 +74,145 @@ export default function NoticePreview({
         </p>
       </div>
 
-      {/* Preview */}
+      {/* =========================
+          NOTICE BOARD
+      ========================= */}
 
-      <div className="space-y-6 bg-slate-50 p-6">
+      <div className="bg-white p-5 sm:p-6">
+        {/* Heading */}
 
-        {/* Category */}
+        <div className="flex items-end justify-between gap-4">
+          <h1 className="text-2xl font-bold text-green-700 sm:text-3xl">
+            Notice Board
+          </h1>
 
-        <div className="inline-flex rounded-xl bg-green-700 px-4 py-2 text-sm font-semibold text-white">
-          {category || "General Notice"}
+          <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-green-700">
+            View All
+            <ExternalLink size={15} />
+          </span>
         </div>
 
-        {/* Notice Card */}
+        {/* =========================
+            CATEGORY TABS
+        ========================= */}
 
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-[#EEF0FA] shadow-sm">
+        <div className="mt-6 overflow-x-auto">
+          <div className="flex min-w-max rounded-none bg-slate-100 p-1">
+            {categories.map((item) => {
+              const active =
+                item === category;
 
-          <div className="flex flex-col gap-5 p-6 sm:flex-row">
+              return (
+                <div
+                  key={item}
+                  className={`
+                    min-w-[150px]
+                    px-4
+                    py-4
+                    text-center
+                    text-sm
+                    font-medium
+                    transition
+                    ${
+                      active
+                        ? "bg-white font-bold text-green-700 shadow-sm"
+                        : "text-slate-700"
+                    }
+                  `}
+                >
+                  {item}
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
+        {/* =========================
+            SINGLE NOTICE PREVIEW
+        ========================= */}
+
+        <div className="mt-4">
+          <div className="flex min-h-[145px] gap-4 bg-slate-100 p-5">
             {/* Date */}
 
-            <div className="flex w-full flex-row items-center gap-4 sm:w-auto sm:flex-col sm:items-center">
+            <div className="flex w-[95px] shrink-0 flex-col justify-center">
+              <span className="text-3xl font-bold text-slate-700">
+                {day}
+              </span>
 
-              <div className="text-center">
-                <h3 className="text-5xl font-bold text-slate-800">
-                  {day}
-                </h3>
-              </div>
-
-              <div className="rounded-md bg-green-700 px-5 py-3 text-center text-white shadow">
-                <p className="text-2xl font-bold">
-                  {month}
-                </p>
-
-                <p className="text-lg">
-                  {year}
-                </p>
-              </div>
-
+              <span className="mt-2 bg-green-600 px-3 py-2 text-center text-sm font-bold text-white">
+                {month}{" "}
+                {year
+                  .toString()
+                  .slice(-2)}
+              </span>
             </div>
 
             {/* Content */}
 
-            <div className="flex-1">
-
-              <h2 className="text-2xl font-bold leading-10 text-slate-800">
+            <div className="flex min-w-0 flex-1 flex-col justify-center">
+              <h3 className="line-clamp-2 text-base font-medium leading-6 text-slate-700 sm:text-lg">
                 {title ||
-                  "Your Notice Title Will Appear Here"}
-              </h2>
+                  "Your notice title will appear here"}
+              </h3>
 
-              <div className="mt-6 flex flex-wrap items-center gap-6 text-slate-600">
+              <div className="mt-3 flex items-center gap-2 text-sm text-slate-600">
+                <Clock3 size={17} />
 
-                <div className="flex items-center gap-2">
-                  <Clock3 size={18} />
-
-                  <span>{time}</span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <CalendarDays size={18} />
-
-                  <span>
-                    {day} {month} {year}
-                  </span>
-                </div>
-
+                <span>
+                  {time || "3.40 PM"}
+                </span>
               </div>
-
-              {/* Status */}
-
-              <div className="mt-6">
-
-                {isPublished ? (
-                  <span className="rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
-                    Published
-                  </span>
-                ) : (
-                  <span className="rounded-full bg-red-100 px-4 py-2 text-sm font-semibold text-red-700">
-                    Draft
-                  </span>
-                )}
-
-              </div>
-
-              {/* PDF */}
-
-              {pdf && (
-                <a
-                  href={pdf}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
-                >
-                  <FileText size={18} />
-
-                  View PDF
-                </a>
-              )}
-
             </div>
-
           </div>
-
         </div>
 
+        {/* =========================
+            PREVIEW INFORMATION
+        ========================= */}
+
+        <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="flex flex-wrap gap-2">
+            <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+              {category}
+            </span>
+
+            <span
+              className={`
+                rounded-full
+                px-3
+                py-1
+                text-xs
+                font-semibold
+                ${
+                  isPublished
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
+                }
+              `}
+            >
+              {isPublished
+                ? "Published"
+                : "Unpublished"}
+            </span>
+
+            <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">
+              Order #{order}
+            </span>
+          </div>
+
+          {description && (
+            <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-500">
+              {description}
+            </p>
+          )}
+
+          {pdf && (
+            <p className="mt-2 text-xs font-medium text-green-700">
+              PDF attached
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,67 +1,101 @@
 "use client";
 
 import Link from "next/link";
-import { FileText, Pencil, Trash2 } from "lucide-react";
+import {
+  FileText,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 
 interface Notice {
   _id: string;
   title: string;
-  category: string;
+  slug: string;
+  category:
+    | "General Notice"
+    | "Admission Notice"
+    | "Reports"
+    | "Job Circular";
+  description: string;
   pdf: string;
-  order: number;
+  date: string;
+  time: string;
   isPublished: boolean;
+  order: number;
   createdAt: string;
 }
 
 interface NoticeTableRowProps {
   notice: Notice;
+  onDelete: (id: string) => void;
 }
 
 export default function NoticeTableRow({
   notice,
+  onDelete,
 }: NoticeTableRowProps) {
-  return (
-    <tr className="border-b border-slate-200 transition hover:bg-slate-50">
-      {/* Category */}
-      <td className="px-6 py-4">
-        <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">
-          {notice.category}
-        </span>
-      </td>
+  const noticeDate = new Date(
+    notice.date
+  );
 
-      {/* Title */}
+  return (
+    <tr className="border-t border-slate-200">
+      {/* =========================
+          TITLE
+      ========================= */}
+
       <td className="px-6 py-4">
-        <div>
+        <div className="max-w-md">
           <h3 className="font-semibold text-slate-800">
             {notice.title}
           </h3>
 
-          <p className="mt-1 text-sm text-slate-500">
-            Display Order: {notice.order}
+          <p className="mt-1 line-clamp-1 text-sm text-slate-500">
+            {notice.slug}
           </p>
         </div>
       </td>
 
-      {/* PDF */}
+      {/* =========================
+          CATEGORY
+      ========================= */}
+
       <td className="px-6 py-4">
-        {notice.pdf ? (
-          <a
-            href={notice.pdf}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100"
-          >
-            <FileText size={16} />
-            PDF
-          </a>
-        ) : (
-          <span className="text-sm text-slate-400">
-            No PDF
-          </span>
-        )}
+        <span className="rounded-lg bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
+          {notice.category}
+        </span>
       </td>
 
-      {/* Status */}
+      {/* =========================
+          DATE
+      ========================= */}
+
+      <td className="px-6 py-4">
+        <div>
+          <p className="text-sm font-semibold text-slate-700">
+            {noticeDate.toLocaleDateString()}
+          </p>
+
+          <p className="mt-1 text-xs text-slate-500">
+            {notice.time}
+          </p>
+        </div>
+      </td>
+
+      {/* =========================
+          ORDER
+      ========================= */}
+
+      <td className="px-6 py-4">
+        <span className="rounded-lg bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
+          #{notice.order}
+        </span>
+      </td>
+
+      {/* =========================
+          STATUS
+      ========================= */}
+
       <td className="px-6 py-4">
         {notice.isPublished ? (
           <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
@@ -69,81 +103,98 @@ export default function NoticeTableRow({
           </span>
         ) : (
           <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-            Draft
+            Unpublished
           </span>
         )}
       </td>
 
-      {/* Created */}
+      {/* =========================
+          CREATED
+      ========================= */}
+
       <td className="px-6 py-4 text-sm text-slate-500">
-        {new Date(notice.createdAt).toLocaleDateString()}
+        {new Date(
+          notice.createdAt
+        ).toLocaleDateString()}
       </td>
 
-      {/* Actions */}
+      {/* =========================
+          ACTIONS
+      ========================= */}
 
-<td className="px-6 py-4">
-  <div className="flex items-center justify-center gap-3">
+      <td className="px-6 py-4">
+        <div className="flex items-center justify-center gap-3">
+          {/* PDF */}
 
-    <Link
-      href={`/dashboard/notices/${notice._id}/edit`}
-      className="
-        flex
-        h-10
-        w-10
-        items-center
-        justify-center
-        rounded-xl
-        bg-blue-50
-        text-blue-600
-        transition
-        hover:bg-blue-100
-      "
-    >
-      <Pencil size={18} />
-    </Link>
+          {notice.pdf && (
+            <a
+              href={notice.pdf}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="
+                flex
+                h-10
+                w-10
+                items-center
+                justify-center
+                rounded-xl
+                bg-green-50
+                text-green-600
+                transition
+                hover:bg-green-100
+              "
+              title="View PDF"
+            >
+              <FileText size={18} />
+            </a>
+          )}
 
-    <button
-      type="button"
-      onClick={async () => {
-        const ok = window.confirm(
-          "Delete this notice?"
-        );
+          {/* Edit */}
 
-        if (!ok) return;
+          <Link
+            href={`/dashboard/home/notices/edit/${notice._id}`}
+            className="
+              flex
+              h-10
+              w-10
+              items-center
+              justify-center
+              rounded-xl
+              bg-blue-50
+              text-blue-600
+              transition
+              hover:bg-blue-100
+            "
+            title="Edit Notice"
+          >
+            <Pencil size={18} />
+          </Link>
 
-        const res = await fetch(
-          `/api/notices/${notice._id}`,
-          {
-            method: "DELETE",
-          }
-        );
+          {/* Delete */}
 
-        const result = await res.json();
-
-        if (res.ok) {
-          window.location.reload();
-        } else {
-          alert(result.message);
-        }
-      }}
-      className="
-        flex
-        h-10
-        w-10
-        items-center
-        justify-center
-        rounded-xl
-        bg-red-50
-        text-red-600
-        transition
-        hover:bg-red-100
-      "
-    >
-      <Trash2 size={18} />
-    </button>
-
-  </div>
-</td>
+          <button
+            type="button"
+            onClick={() =>
+              onDelete(notice._id)
+            }
+            className="
+              flex
+              h-10
+              w-10
+              items-center
+              justify-center
+              rounded-xl
+              bg-red-50
+              text-red-600
+              transition
+              hover:bg-red-100
+            "
+            title="Delete Notice"
+          >
+            <Trash2 size={18} />
+          </button>
+        </div>
+      </td>
     </tr>
   );
 }

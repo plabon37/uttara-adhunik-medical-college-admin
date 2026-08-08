@@ -1,69 +1,79 @@
-import { NextRequest, NextResponse } from "next/server";
-import {connectToDB} from "@/lib/connectToDB";
-import Publication from "@/lib/models/Publication";
+import { NextResponse } from "next/server";
+import { connectToDB } from "@/lib/connectToDB";
+import { PublicationModel } from "@/lib/models/Publication";
 
-export async function GET(req: NextRequest) {
+// ==========================
+// GET ALL PUBLICATION
+// ==========================
+
+export async function GET() {
   try {
     await connectToDB();
 
-    const { searchParams } = new URL(req.url);
+    const publications = await PublicationModel.find().sort({
+      order: 1,
+      createdAt: -1,
+    });
 
-    const type = searchParams.get("type");
-
-    const query: Record<string, unknown> = {
-      isPublished: true,
-    };
-
-    if (type && type !== "All") {
-      query.type = type;
-    }
-
-    const publications = await Publication.find(query)
-      .sort({ order: 1, createdAt: -1 });
-
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
-      message: "Publications fetched successfully",
       data: publications,
     });
+
+    response.headers.set(
+      "Access-Control-Allow-Origin",
+      "*"
+    );
+
+    return response;
   } catch (error) {
-    console.error(error);
+    console.error("GET PUBLICATION ERROR:", error);
 
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to fetch publications",
+        message: "Failed to fetch publication data.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
 
-export async function POST(req: NextRequest) {
+// ==========================
+// CREATE PUBLICATION
+// ==========================
+
+export async function POST(req: Request) {
   try {
     await connectToDB();
 
     const body = await req.json();
 
-    const publication = await Publication.create(body);
+    const publication = await PublicationModel.create(body);
 
     return NextResponse.json(
       {
         success: true,
-        message: "Publication created successfully",
+        message: "Publication created successfully.",
         data: publication,
       },
-      { status: 201 }
+      {
+        status: 201,
+      }
     );
   } catch (error) {
-    console.error(error);
+    console.error("CREATE PUBLICATION ERROR:", error);
 
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to create publication",
+        message: "Failed to create publication.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }

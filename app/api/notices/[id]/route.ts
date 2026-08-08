@@ -1,54 +1,65 @@
-import { NextRequest, NextResponse } from "next/server";
-import {connectToDB} from "@/lib/connectToDB";
-import Notice from "@/lib/models/Notice";
+import { NextResponse } from "next/server";
+import { connectToDB } from "@/lib/connectToDB";
+import { NoticeModel } from "@/lib/models/Notice";
 
-interface Props {
-  params: Promise<{
-    id: string;
-  }>;
-}
+// ==========================
+// GET SINGLE NOTICE
+// ==========================
 
 export async function GET(
-  req: NextRequest,
-  { params }: Props
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectToDB();
 
     const { id } = await params;
 
-    const notice = await Notice.findById(id);
+    const notice = await NoticeModel.findById(id);
 
     if (!notice) {
       return NextResponse.json(
         {
           success: false,
-          message: "Notice not found",
+          message: "Notice not found.",
         },
-        { status: 404 }
+        {
+          status: 404,
+        }
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      data: notice,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        data: notice,
+      },
+      {
+        status: 200,
+      }
+    );
   } catch (error) {
-    console.error(error);
+    console.error("GET SINGLE NOTICE ERROR:", error);
 
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to fetch notice",
+        message: "Failed to fetch notice.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
 
+// ==========================
+// UPDATE NOTICE
+// ==========================
+
 export async function PATCH(
-  req: NextRequest,
-  { params }: Props
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectToDB();
@@ -57,53 +68,99 @@ export async function PATCH(
 
     const body = await req.json();
 
-    const notice = await Notice.findByIdAndUpdate(id, body, {
-      new: true,
-      runValidators: true,
-    });
+    const notice = await NoticeModel.findByIdAndUpdate(
+      id,
+      body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
-    return NextResponse.json({
-      success: true,
-      message: "Notice updated successfully",
-      data: notice,
-    });
+    if (!notice) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Notice not found.",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Notice updated successfully.",
+        data: notice,
+      },
+      {
+        status: 200,
+      }
+    );
   } catch (error) {
-    console.error(error);
+    console.error("UPDATE NOTICE ERROR:", error);
 
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to update notice",
+        message: "Failed to update notice.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
 
+// ==========================
+// DELETE NOTICE
+// ==========================
+
 export async function DELETE(
-  req: NextRequest,
-  { params }: Props
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectToDB();
 
     const { id } = await params;
 
-    await Notice.findByIdAndDelete(id);
+    const notice = await NoticeModel.findByIdAndDelete(id);
 
-    return NextResponse.json({
-      success: true,
-      message: "Notice deleted successfully",
-    });
+    if (!notice) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Notice not found.",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Notice deleted successfully.",
+      },
+      {
+        status: 200,
+      }
+    );
   } catch (error) {
-    console.error(error);
+    console.error("DELETE NOTICE ERROR:", error);
 
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to delete notice",
+        message: "Failed to delete notice.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }

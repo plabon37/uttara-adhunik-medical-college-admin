@@ -1,85 +1,79 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { connectToDB } from "@/lib/connectToDB";
-import Notice from "@/lib/models/Notice";
+import { NoticeModel } from "@/lib/models/Notice";
 
-export async function GET(req: NextRequest) {
+// ==========================
+// GET ALL NOTICE
+// ==========================
+
+export async function GET() {
   try {
     await connectToDB();
 
-    const { searchParams } = new URL(req.url);
+    const notices = await NoticeModel.find().sort({
+      order: 1,
+      createdAt: -1,
+    });
 
-    const category = searchParams.get("category");
+    const response = NextResponse.json({
+      success: true,
+      data: notices,
+    });
 
-    const query: Record<string, unknown> = {
-      isPublished: true,
-    };
-
-    if (category && category !== "All") {
-      query.category = category;
-    }
-
-    const notices = await Notice.find(query)
-      .sort({ order: 1, createdAt: -1 });
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Notices fetched successfully",
-        data: notices,
-      },
-      { status: 200 }
+    response.headers.set(
+      "Access-Control-Allow-Origin",
+      "*"
     );
+
+    return response;
   } catch (error) {
-    console.error(error);
+    console.error("GET NOTICE ERROR:", error);
 
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to fetch notices",
+        message: "Failed to fetch notice data.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
 
-export async function POST(req: NextRequest) {
+// ==========================
+// CREATE NOTICE
+// ==========================
+
+export async function POST(req: Request) {
   try {
     await connectToDB();
 
     const body = await req.json();
 
-    // Generate slug from title
-    const slug = body.title
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/\s+/g, "-");
-
-    const notice = await Notice.create({
-      ...body,
-      slug,
-    });
+    const notice = await NoticeModel.create(body);
 
     return NextResponse.json(
       {
         success: true,
-        message: "Notice created successfully",
+        message: "Notice created successfully.",
         data: notice,
       },
-      { status: 201 }
+      {
+        status: 201,
+      }
     );
   } catch (error) {
-    console.error(error);
+    console.error("CREATE NOTICE ERROR:", error);
 
     return NextResponse.json(
       {
         success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to create notice",
+        message: "Failed to create notice.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
