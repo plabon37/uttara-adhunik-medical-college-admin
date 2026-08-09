@@ -33,12 +33,12 @@ export const sidebarMenu = [
         href: "/dashboard/home/statistics",
       },
       {
-        title: "Gallery",
-        href: "/dashboard/home/gallery",
+        title: "Departments",
+        href: "/dashboard/home/departments",
       },
       {
-        title: "Notice",
-        href: "/dashboard/home/notice",
+        title: "Departments Section",
+        href: "/dashboard/home/departments/section",
       },
       {
         title: "Contact",

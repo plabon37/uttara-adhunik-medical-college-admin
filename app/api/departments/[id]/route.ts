@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
+
 import { connectToDB } from "@/lib/connectToDB";
-import { StatisticsModel } from "@/lib/models/Statistics";
+import { DepartmentModel } from "@/lib/models/Department";
 
 export const runtime = "nodejs";
 
@@ -49,7 +51,6 @@ function getCorsHeaders(
 
 // =========================================================
 // OPTIONS
-// Handle CORS preflight request
 // =========================================================
 
 export async function OPTIONS(
@@ -66,11 +67,16 @@ export async function OPTIONS(
 
 /* =========================================================
 GET
-Get Statistics section
+Get single Department
 ========================================================= */
 
 export async function GET(
-  req: NextRequest
+  req: NextRequest,
+  context: {
+    params: Promise<{
+      id: string;
+    }>;
+  }
 ) {
   const origin =
     req.headers.get("origin");
@@ -78,15 +84,47 @@ export async function GET(
   try {
     await connectToDB();
 
-    const statistics =
-      await StatisticsModel.findOne().lean();
+    const { id } =
+      await context.params;
 
-    if (!statistics) {
+    // =====================================================
+    // CHECK OBJECT ID
+    // =====================================================
+
+    if (
+      !mongoose.Types.ObjectId.isValid(
+        id
+      )
+    ) {
       return NextResponse.json(
         {
           success: false,
           message:
-            "Statistics section not found.",
+            "Invalid Department ID.",
+        },
+        {
+          status: 400,
+          headers:
+            getCorsHeaders(origin),
+        }
+      );
+    }
+
+    // =====================================================
+    // FIND DEPARTMENT
+    // =====================================================
+
+    const department =
+      await DepartmentModel.findById(
+        id
+      ).lean();
+
+    if (!department) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Department not found.",
         },
         {
           status: 404,
@@ -99,7 +137,7 @@ export async function GET(
     return NextResponse.json(
       {
         success: true,
-        data: statistics,
+        data: department,
       },
       {
         status: 200,
@@ -109,7 +147,7 @@ export async function GET(
     );
   } catch (error) {
     console.error(
-      "GET STATISTICS ERROR:",
+      "GET DEPARTMENT ERROR:",
       error
     );
 
@@ -117,89 +155,7 @@ export async function GET(
       {
         success: false,
         message:
-          "Failed to fetch Statistics section.",
-      },
-      {
-        status: 500,
-        headers:
-          getCorsHeaders(origin),
-      }
-    );
-  }
-}
-
-/* =========================================================
-POST
-Create Statistics section
-========================================================= */
-
-export async function POST(
-  req: NextRequest
-) {
-  const origin =
-    req.headers.get("origin");
-
-  try {
-    await connectToDB();
-
-    const body =
-      await req.json();
-
-    /* -------------------------------------------------------
-       CHECK EXISTING STATISTICS
-    ------------------------------------------------------- */
-
-    const existingStatistics =
-      await StatisticsModel.findOne();
-
-    if (existingStatistics) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "Statistics section already exists.",
-        },
-        {
-          status: 409,
-          headers:
-            getCorsHeaders(origin),
-        }
-      );
-    }
-
-    /* -------------------------------------------------------
-       CREATE STATISTICS
-    ------------------------------------------------------- */
-
-    const statistics =
-      await StatisticsModel.create(
-        body
-      );
-
-    return NextResponse.json(
-      {
-        success: true,
-        message:
-          "Statistics section created successfully.",
-        data: statistics,
-      },
-      {
-        status: 201,
-        headers:
-          getCorsHeaders(origin),
-      }
-    );
-  } catch (error) {
-    console.error(
-      "CREATE STATISTICS ERROR:",
-      error
-    );
-
-    return NextResponse.json(
-      {
-        success: false,
-        message:
-          "Failed to create Statistics section.",
+          "Failed to fetch Department.",
       },
       {
         status: 500,
@@ -212,11 +168,16 @@ export async function POST(
 
 /* =========================================================
 PUT
-Update Statistics section
+Update Department
 ========================================================= */
 
 export async function PUT(
-  req: NextRequest
+  req: NextRequest,
+  context: {
+    params: Promise<{
+      id: string;
+    }>;
+  }
 ) {
   const origin =
     req.headers.get("origin");
@@ -224,12 +185,71 @@ export async function PUT(
   try {
     await connectToDB();
 
+    const { id } =
+      await context.params;
+
+    // =====================================================
+    // CHECK OBJECT ID
+    // =====================================================
+
+    if (
+      !mongoose.Types.ObjectId.isValid(
+        id
+      )
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Invalid Department ID.",
+        },
+        {
+          status: 400,
+          headers:
+            getCorsHeaders(origin),
+        }
+      );
+    }
+
     const body =
       await req.json();
 
-    const statistics =
-      await StatisticsModel.findOneAndUpdate(
-        {},
+    // =====================================================
+    // CHECK DUPLICATE SLUG
+    // =====================================================
+
+    if (body.slug) {
+      const existingDepartment =
+        await DepartmentModel.findOne({
+          slug: body.slug,
+          _id: {
+            $ne: id,
+          },
+        });
+
+      if (existingDepartment) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "A Department with this slug already exists.",
+          },
+          {
+            status: 409,
+            headers:
+              getCorsHeaders(origin),
+          }
+        );
+      }
+    }
+
+    // =====================================================
+    // UPDATE DEPARTMENT
+    // =====================================================
+
+    const department =
+      await DepartmentModel.findByIdAndUpdate(
+        id,
         body,
         {
           new: true,
@@ -237,12 +257,12 @@ export async function PUT(
         }
       );
 
-    if (!statistics) {
+    if (!department) {
       return NextResponse.json(
         {
           success: false,
           message:
-            "Statistics section not found.",
+            "Department not found.",
         },
         {
           status: 404,
@@ -256,8 +276,8 @@ export async function PUT(
       {
         success: true,
         message:
-          "Statistics section updated successfully.",
-        data: statistics,
+          "Department updated successfully.",
+        data: department,
       },
       {
         status: 200,
@@ -267,7 +287,7 @@ export async function PUT(
     );
   } catch (error) {
     console.error(
-      "UPDATE STATISTICS ERROR:",
+      "UPDATE DEPARTMENT ERROR:",
       error
     );
 
@@ -275,24 +295,29 @@ export async function PUT(
       {
         success: false,
         message:
-          "Failed to update Statistics section.",
+          "Failed to update Department.",
       },
       {
         status: 500,
         headers:
           getCorsHeaders(origin),
-      }
+        }
     );
   }
 }
 
 /* =========================================================
 DELETE
-Delete Statistics section
+Delete Department
 ========================================================= */
 
 export async function DELETE(
-  req: NextRequest
+  req: NextRequest,
+  context: {
+    params: Promise<{
+      id: string;
+    }>;
+  }
 ) {
   const origin =
     req.headers.get("origin");
@@ -300,17 +325,47 @@ export async function DELETE(
   try {
     await connectToDB();
 
-    const statistics =
-      await StatisticsModel.findOneAndDelete(
-        {}
-      );
+    const { id } =
+      await context.params;
 
-    if (!statistics) {
+    // =====================================================
+    // CHECK OBJECT ID
+    // =====================================================
+
+    if (
+      !mongoose.Types.ObjectId.isValid(
+        id
+      )
+    ) {
       return NextResponse.json(
         {
           success: false,
           message:
-            "Statistics section not found.",
+            "Invalid Department ID.",
+        },
+        {
+          status: 400,
+          headers:
+            getCorsHeaders(origin),
+        }
+      );
+    }
+
+    // =====================================================
+    // DELETE DEPARTMENT
+    // =====================================================
+
+    const department =
+      await DepartmentModel.findByIdAndDelete(
+        id
+      );
+
+    if (!department) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Department not found.",
         },
         {
           status: 404,
@@ -324,7 +379,7 @@ export async function DELETE(
       {
         success: true,
         message:
-          "Statistics section deleted successfully.",
+          "Department deleted successfully.",
       },
       {
         status: 200,
@@ -334,7 +389,7 @@ export async function DELETE(
     );
   } catch (error) {
     console.error(
-      "DELETE STATISTICS ERROR:",
+      "DELETE DEPARTMENT ERROR:",
       error
     );
 
@@ -342,13 +397,13 @@ export async function DELETE(
       {
         success: false,
         message:
-          "Failed to delete Statistics section.",
+          "Failed to delete Department.",
       },
       {
         status: 500,
         headers:
           getCorsHeaders(origin),
-      }
-    );
+        }
+      );
   }
 }
