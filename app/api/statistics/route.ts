@@ -1,55 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDB } from "@/lib/connectToDB";
-import { AboutModel } from "@/lib/models/About";
+import { StatisticsModel } from "@/lib/models/Statistics";
 
 export const runtime = "nodejs";
 
-// =========================================================
-// CORS HEADERS
-// =========================================================
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods":
-    "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization",
-};
-
-// =========================================================
-// OPTIONS
-// Handle CORS preflight request
-// =========================================================
-
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: corsHeaders,
-  });
-}
-
 /* =========================================================
 GET
-Get About section
+Get Statistics section
 ========================================================= */
 
 export async function GET() {
   try {
     await connectToDB();
 
-    const about =
-      await AboutModel.findOne().lean();
+    const statistics =
+      await StatisticsModel.findOne().lean();
 
-    if (!about) {
+    if (!statistics) {
       return NextResponse.json(
         {
           success: false,
           message:
-            "About section not found.",
+            "Statistics section not found.",
         },
         {
           status: 404,
-          headers: corsHeaders,
         }
       );
     }
@@ -57,16 +32,15 @@ export async function GET() {
     return NextResponse.json(
       {
         success: true,
-        data: about,
+        data: statistics,
       },
       {
         status: 200,
-        headers: corsHeaders,
       }
     );
   } catch (error) {
     console.error(
-      "GET ABOUT ERROR:",
+      "GET STATISTICS ERROR:",
       error
     );
 
@@ -74,11 +48,10 @@ export async function GET() {
       {
         success: false,
         message:
-          "Failed to fetch About section.",
+          "Failed to fetch Statistics section.",
       },
       {
         status: 500,
-        headers: corsHeaders,
       }
     );
   }
@@ -86,7 +59,7 @@ export async function GET() {
 
 /* =========================================================
 POST
-Create About section
+Create Statistics section
 ========================================================= */
 
 export async function POST(
@@ -99,48 +72,48 @@ export async function POST(
       await req.json();
 
     /* -------------------------------------------------------
-       CHECK EXISTING ABOUT
+       CHECK EXISTING STATISTICS
     ------------------------------------------------------- */
 
-    const existingAbout =
-      await AboutModel.findOne();
+    const existingStatistics =
+      await StatisticsModel.findOne();
 
-    if (existingAbout) {
+    if (existingStatistics) {
       return NextResponse.json(
         {
           success: false,
           message:
-            "About section already exists.",
+            "Statistics section already exists.",
         },
         {
           status: 409,
-          headers: corsHeaders,
         }
       );
     }
 
     /* -------------------------------------------------------
-       CREATE ABOUT
+       CREATE STATISTICS
     ------------------------------------------------------- */
 
-    const about =
-      await AboutModel.create(body);
+    const statistics =
+      await StatisticsModel.create(
+        body
+      );
 
     return NextResponse.json(
       {
         success: true,
         message:
-          "About section created successfully.",
-        data: about,
+          "Statistics section created successfully.",
+        data: statistics,
       },
       {
         status: 201,
-        headers: corsHeaders,
       }
     );
   } catch (error) {
     console.error(
-      "CREATE ABOUT ERROR:",
+      "CREATE STATISTICS ERROR:",
       error
     );
 
@@ -148,11 +121,10 @@ export async function POST(
       {
         success: false,
         message:
-          "Failed to create About section.",
+          "Failed to create Statistics section.",
       },
       {
         status: 500,
-        headers: corsHeaders,
       }
     );
   }
@@ -160,7 +132,7 @@ export async function POST(
 
 /* =========================================================
 PUT
-Update About section
+Update Statistics section
 ========================================================= */
 
 export async function PUT(
@@ -172,8 +144,8 @@ export async function PUT(
     const body =
       await req.json();
 
-    const about =
-      await AboutModel.findOneAndUpdate(
+    const statistics =
+      await StatisticsModel.findOneAndUpdate(
         {},
         body,
         {
@@ -182,16 +154,15 @@ export async function PUT(
         }
       );
 
-    if (!about) {
+    if (!statistics) {
       return NextResponse.json(
         {
           success: false,
           message:
-            "About section not found.",
+            "Statistics section not found.",
         },
         {
           status: 404,
-          headers: corsHeaders,
         }
       );
     }
@@ -200,17 +171,16 @@ export async function PUT(
       {
         success: true,
         message:
-          "About section updated successfully.",
-        data: about,
+          "Statistics section updated successfully.",
+        data: statistics,
       },
       {
         status: 200,
-        headers: corsHeaders,
       }
     );
   } catch (error) {
     console.error(
-      "UPDATE ABOUT ERROR:",
+      "UPDATE STATISTICS ERROR:",
       error
     );
 
@@ -218,11 +188,10 @@ export async function PUT(
       {
         success: false,
         message:
-          "Failed to update About section.",
+          "Failed to update Statistics section.",
       },
       {
         status: 500,
-        headers: corsHeaders,
       }
     );
   }
@@ -230,26 +199,27 @@ export async function PUT(
 
 /* =========================================================
 DELETE
-Delete About section
+Delete Statistics section
 ========================================================= */
 
 export async function DELETE() {
   try {
     await connectToDB();
 
-    const about =
-      await AboutModel.findOneAndDelete({});
+    const statistics =
+      await StatisticsModel.findOneAndDelete(
+        {}
+      );
 
-    if (!about) {
+    if (!statistics) {
       return NextResponse.json(
         {
           success: false,
           message:
-            "About section not found.",
+            "Statistics section not found.",
         },
         {
           status: 404,
-          headers: corsHeaders,
         }
       );
     }
@@ -258,16 +228,15 @@ export async function DELETE() {
       {
         success: true,
         message:
-          "About section deleted successfully.",
+          "Statistics section deleted successfully.",
       },
       {
         status: 200,
-        headers: corsHeaders,
       }
     );
   } catch (error) {
     console.error(
-      "DELETE ABOUT ERROR:",
+      "DELETE STATISTICS ERROR:",
       error
     );
 
@@ -275,11 +244,10 @@ export async function DELETE() {
       {
         success: false,
         message:
-          "Failed to delete About section.",
+          "Failed to delete Statistics section.",
       },
       {
         status: 500,
-        headers: corsHeaders,
       }
     );
   }
