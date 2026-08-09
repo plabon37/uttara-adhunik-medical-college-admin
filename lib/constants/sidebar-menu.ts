@@ -25,8 +25,8 @@ export const sidebarMenu = [
         href: "/dashboard/home/publications",
       },
       {
-        title: "Why Choose UAMC",
-        href: "/dashboard/home/why-uamc",
+        title: "About",
+        href: "/dashboard/home/about",
       },
       {
         title: "Statistics",
