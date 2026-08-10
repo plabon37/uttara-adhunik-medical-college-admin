@@ -45,6 +45,10 @@ export const sidebarMenu = [
         href: "/dashboard/home/admission",
       },
       {
+        title: "Facilities",
+        href: "/dashboard/home/facilities",
+      },
+      {
         title: "Contact",
         href: "/dashboard/home/contact",
       },
