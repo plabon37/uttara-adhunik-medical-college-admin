@@ -49,6 +49,10 @@ export const sidebarMenu = [
         href: "/dashboard/home/facilities",
       },
       {
+        title: "Principal Message",
+        href: "/dashboard/home/principal-message",
+      },
+      {
         title: "Contact",
         href: "/dashboard/home/contact",
       },
