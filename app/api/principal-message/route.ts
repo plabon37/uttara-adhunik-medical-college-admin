@@ -3,134 +3,88 @@ import {
   NextResponse,
 } from "next/server";
 
-import {
-  connectToDB,
-} from "@/lib/connectToDB";
+import mongoose from "mongoose";
+
+import { connectToDB } from "@/lib/connectToDB";
 
 import {
   PrincipalMessageModel,
 } from "@/lib/models/PrincipalMessage";
 
 // =========================================================
-// RUNTIME
+// CORS HEADERS
 // =========================================================
 
-export const runtime =
-  "nodejs";
+const corsHeaders = {
+  "Access-Control-Allow-Origin":
+    "http://localhost:3001",
+
+  "Access-Control-Allow-Methods":
+    "GET, POST, PUT, OPTIONS",
+
+  "Access-Control-Allow-Headers":
+    "Content-Type",
+};
+
+// =========================================================
+// OPTIONS
+// =========================================================
+
+export async function OPTIONS() {
+  return new NextResponse(
+    null,
+    {
+      status: 204,
+      headers: corsHeaders,
+    }
+  );
+}
 
 // =========================================================
 // GET
-//
-// GET /api/principal-message
-//     -> latest Principal Message
-//
-// GET /api/principal-message?id=xxxxx
-//     -> specific Principal Message
 // =========================================================
 
-export async function GET(
-  request: NextRequest
-) {
+export async function GET() {
   try {
     await connectToDB();
 
-    // =======================================================
-    // GET ID
-    // =======================================================
+    const principalMessage =
+      await PrincipalMessageModel.findOne()
+        .sort({
+          createdAt: -1,
+        })
+        .lean();
 
-    const id =
-      request.nextUrl.searchParams.get(
-        "id"
+    // =====================================================
+    // NOT FOUND
+    // =====================================================
+
+    if (!principalMessage) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Principal Message not found.",
+        },
+        {
+          status: 404,
+          headers: corsHeaders,
+        }
       );
-
-    // =======================================================
-    // FIND DATA
-    // =======================================================
-
-    let principalMessage;
-
-    if (id) {
-      principalMessage =
-        await PrincipalMessageModel
-          .findById(id)
-          .lean();
-
-      // -----------------------------------------------------
-      // SPECIFIC DATA NOT FOUND
-      // -----------------------------------------------------
-
-      if (
-        !principalMessage
-      ) {
-        return NextResponse.json(
-          {
-            success: false,
-
-            message:
-              "Principal Message not found.",
-
-            data: null,
-          },
-          {
-            status: 404,
-          }
-        );
-      }
-    } else {
-      // -----------------------------------------------------
-      // LIST PAGE
-      // -----------------------------------------------------
-
-      principalMessage =
-        await PrincipalMessageModel
-          .findOne()
-          .sort({
-            createdAt: -1,
-          })
-          .lean();
-
-      // -----------------------------------------------------
-      // NO DATA
-      //
-      // IMPORTANT:
-      // This is NOT an API ERROR.
-      // The admin page will show Empty component.
-      // -----------------------------------------------------
-
-      if (
-        !principalMessage
-      ) {
-        return NextResponse.json(
-          {
-            success: true,
-
-            message:
-              "Principal Message not found.",
-
-            data: null,
-          },
-          {
-            status: 200,
-          }
-        );
-      }
     }
 
-    // =======================================================
+    // =====================================================
     // SUCCESS
-    // =======================================================
+    // =====================================================
 
     return NextResponse.json(
       {
         success: true,
-
-        message:
-          "Principal Message fetched successfully.",
-
         data: principalMessage,
       },
       {
         status: 200,
+        headers: corsHeaders,
       }
     );
   } catch (error) {
@@ -142,14 +96,12 @@ export async function GET(
     return NextResponse.json(
       {
         success: false,
-
         message:
           "Failed to fetch Principal Message.",
-
-        data: null,
       },
       {
         status: 500,
+        headers: corsHeaders,
       }
     );
   }
@@ -157,8 +109,6 @@ export async function GET(
 
 // =========================================================
 // POST
-//
-// Create Principal Message
 // =========================================================
 
 export async function POST(
@@ -166,10 +116,6 @@ export async function POST(
 ) {
   try {
     await connectToDB();
-
-    // =======================================================
-    // REQUEST BODY
-    // =======================================================
 
     const body =
       await request.json();
@@ -189,9 +135,9 @@ export async function POST(
       isActive,
     } = body;
 
-    // =======================================================
+    // =====================================================
     // VALIDATION
-    // =======================================================
+    // =====================================================
 
     if (
       !tagline ||
@@ -207,120 +153,88 @@ export async function POST(
       return NextResponse.json(
         {
           success: false,
-
           message:
             "Required fields are missing.",
-
-          data: null,
         },
         {
           status: 400,
+          headers: corsHeaders,
         }
       );
     }
 
-    // =======================================================
-    // PREVENT DUPLICATE SECTION
-    // =======================================================
+    // =====================================================
+    // PREVENT DUPLICATE
+    // =====================================================
 
     const existing =
       await PrincipalMessageModel.findOne();
 
-    if (
-      existing
-    ) {
+    if (existing) {
       return NextResponse.json(
         {
           success: false,
-
           message:
             "Principal Message already exists. Please edit the existing section.",
-
-          data: existing,
         },
         {
           status: 409,
+          headers: corsHeaders,
         }
       );
     }
 
-    // =======================================================
+    // =====================================================
     // CREATE
-    // =======================================================
+    // =====================================================
 
     const principalMessage =
-      await PrincipalMessageModel.create(
-        {
-          tagline:
-            String(
-              tagline
-            ).trim(),
+      await PrincipalMessageModel.create({
+        tagline:
+          tagline.trim(),
 
-          titlePrefix:
-            String(
-              titlePrefix
-            ).trim(),
+        titlePrefix:
+          titlePrefix.trim(),
 
-          titleHighlight:
-            String(
-              titleHighlight
-            ).trim(),
+        titleHighlight:
+          titleHighlight.trim(),
 
-          signatureImage:
-            String(
-              signatureImage
-            ).trim(),
+        signatureImage:
+          signatureImage.trim(),
 
-          principalName:
-            String(
-              principalName
-            ).trim(),
+        principalName:
+          principalName.trim(),
 
-          designation:
-            String(
-              designation
-            ).trim(),
+        designation:
+          designation.trim(),
 
-          heading:
-            String(
-              heading
-            ).trim(),
+        heading:
+          heading.trim(),
 
-          description:
-            String(
-              description
-            ).trim(),
+        description:
+          description.trim(),
 
-          principalImage:
-            String(
-              principalImage
-            ).trim(),
+        principalImage:
+          principalImage.trim(),
 
-          buttonText:
-            buttonText
-              ? String(
-                  buttonText
-                ).trim()
-              : "Read More",
+        buttonText:
+          buttonText?.trim() ||
+          "Read More",
 
-          buttonLink:
-            buttonLink
-              ? String(
-                  buttonLink
-                ).trim()
-              : "#",
+        buttonLink:
+          buttonLink?.trim() ||
+          "#",
 
-          isActive:
-            typeof isActive ===
-            "boolean"
-              ? isActive
-              : true,
-        }
-      );
+        isActive:
+          typeof isActive ===
+          "boolean"
+            ? isActive
+            : true,
+      });
 
-    // =======================================================
+    // =====================================================
     // SUCCESS
-    // =======================================================
+    // =====================================================
 
     return NextResponse.json(
       {
@@ -333,6 +247,7 @@ export async function POST(
       },
       {
         status: 201,
+        headers: corsHeaders,
       }
     );
   } catch (error) {
@@ -344,23 +259,19 @@ export async function POST(
     return NextResponse.json(
       {
         success: false,
-
         message:
           "Failed to create Principal Message.",
-
-        data: null,
       },
       {
         status: 500,
+        headers: corsHeaders,
       }
     );
   }
 }
 
 // =========================================================
-// PUT
-//
-// Update Principal Message
+// PUT — UPDATE
 // =========================================================
 
 export async function PUT(
@@ -369,14 +280,23 @@ export async function PUT(
   try {
     await connectToDB();
 
-    // =======================================================
+    // =====================================================
     // GET ID
-    // =======================================================
+    // =====================================================
+
+    const { searchParams } =
+      new URL(
+        request.url
+      );
 
     const id =
-      request.nextUrl.searchParams.get(
+      searchParams.get(
         "id"
       );
+
+    // =====================================================
+    // ID VALIDATION
+    // =====================================================
 
     if (
       !id
@@ -384,21 +304,37 @@ export async function PUT(
       return NextResponse.json(
         {
           success: false,
-
           message:
             "Principal Message ID is required.",
-
-          data: null,
         },
         {
           status: 400,
+          headers: corsHeaders,
         }
       );
     }
 
-    // =======================================================
-    // BODY
-    // =======================================================
+    if (
+      !mongoose.isValidObjectId(
+        id
+      )
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Invalid Principal Message ID.",
+        },
+        {
+          status: 400,
+          headers: corsHeaders,
+        }
+      );
+    }
+
+    // =====================================================
+    // READ BODY
+    // =====================================================
 
     const body =
       await request.json();
@@ -418,9 +354,9 @@ export async function PUT(
       isActive,
     } = body;
 
-    // =======================================================
+    // =====================================================
     // VALIDATION
-    // =======================================================
+    // =====================================================
 
     if (
       !tagline ||
@@ -436,84 +372,58 @@ export async function PUT(
       return NextResponse.json(
         {
           success: false,
-
           message:
             "Required fields are missing.",
-
-          data: null,
         },
         {
           status: 400,
+          headers: corsHeaders,
         }
       );
     }
 
-    // =======================================================
+    // =====================================================
     // UPDATE
-    // =======================================================
+    // =====================================================
 
-    const updated =
+    const updatedPrincipalMessage =
       await PrincipalMessageModel.findByIdAndUpdate(
         id,
         {
           tagline:
-            String(
-              tagline
-            ).trim(),
+            tagline.trim(),
 
           titlePrefix:
-            String(
-              titlePrefix
-            ).trim(),
+            titlePrefix.trim(),
 
           titleHighlight:
-            String(
-              titleHighlight
-            ).trim(),
+            titleHighlight.trim(),
 
           signatureImage:
-            String(
-              signatureImage
-            ).trim(),
+            signatureImage.trim(),
 
           principalName:
-            String(
-              principalName
-            ).trim(),
+            principalName.trim(),
 
           designation:
-            String(
-              designation
-            ).trim(),
+            designation.trim(),
 
           heading:
-            String(
-              heading
-            ).trim(),
+            heading.trim(),
 
           description:
-            String(
-              description
-            ).trim(),
+            description.trim(),
 
           principalImage:
-            String(
-              principalImage
-            ).trim(),
+            principalImage.trim(),
 
           buttonText:
-            buttonText
-              ? String(
-                  buttonText
-                ).trim()
-              : "Read More",
+            buttonText?.trim() ||
+            "Read More",
 
           buttonLink:
-            buttonLink
-              ? String(
-                  buttonLink
-                ).trim()
-              : "#",
+            buttonLink?.trim() ||
+            "#",
 
           isActive:
             typeof isActive ===
@@ -526,33 +436,31 @@ export async function PUT(
 
           runValidators: true,
         }
-      ).lean();
+      );
 
-    // =======================================================
+    // =====================================================
     // NOT FOUND
-    // =======================================================
+    // =====================================================
 
     if (
-      !updated
+      !updatedPrincipalMessage
     ) {
       return NextResponse.json(
         {
           success: false,
-
           message:
             "Principal Message not found.",
-
-          data: null,
         },
         {
           status: 404,
+          headers: corsHeaders,
         }
       );
     }
 
-    // =======================================================
+    // =====================================================
     // SUCCESS
-    // =======================================================
+    // =====================================================
 
     return NextResponse.json(
       {
@@ -561,10 +469,12 @@ export async function PUT(
         message:
           "Principal Message updated successfully.",
 
-        data: updated,
+        data:
+          updatedPrincipalMessage,
       },
       {
         status: 200,
+        headers: corsHeaders,
       }
     );
   } catch (error) {
@@ -576,273 +486,12 @@ export async function PUT(
     return NextResponse.json(
       {
         success: false,
-
         message:
           "Failed to update Principal Message.",
-
-        data: null,
       },
       {
         status: 500,
-      }
-    );
-  }
-}
-
-// =========================================================
-// PATCH
-//
-// Publish / Hide Principal Message
-// =========================================================
-
-export async function PATCH(
-  request: NextRequest
-) {
-  try {
-    await connectToDB();
-
-    // =======================================================
-    // GET ID
-    // =======================================================
-
-    const id =
-      request.nextUrl.searchParams.get(
-        "id"
-      );
-
-    if (
-      !id
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-
-          message:
-            "Principal Message ID is required.",
-
-          data: null,
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    // =======================================================
-    // BODY
-    // =======================================================
-
-    const body =
-      await request.json();
-
-    // =======================================================
-    // VALIDATE STATUS
-    // =======================================================
-
-    if (
-      typeof body.isActive !==
-      "boolean"
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-
-          message:
-            "isActive must be a boolean.",
-
-          data: null,
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    // =======================================================
-    // UPDATE STATUS
-    // =======================================================
-
-    const updated =
-      await PrincipalMessageModel.findByIdAndUpdate(
-        id,
-        {
-          isActive:
-            body.isActive,
-        },
-        {
-          new: true,
-
-          runValidators: true,
-        }
-      ).lean();
-
-    // =======================================================
-    // NOT FOUND
-    // =======================================================
-
-    if (
-      !updated
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-
-          message:
-            "Principal Message not found.",
-
-          data: null,
-        },
-        {
-          status: 404,
-        }
-      );
-    }
-
-    // =======================================================
-    // SUCCESS
-    // =======================================================
-
-    return NextResponse.json(
-      {
-        success: true,
-
-        message:
-          updated.isActive
-            ? "Principal Message published successfully."
-            : "Principal Message hidden successfully.",
-
-        data: updated,
-      },
-      {
-        status: 200,
-      }
-    );
-  } catch (error) {
-    console.error(
-      "PATCH PRINCIPAL MESSAGE ERROR:",
-      error
-    );
-
-    return NextResponse.json(
-      {
-        success: false,
-
-        message:
-          "Failed to update Principal Message status.",
-
-        data: null,
-      },
-      {
-        status: 500,
-      }
-    );
-  }
-}
-
-// =========================================================
-// DELETE
-//
-// Delete Principal Message
-// =========================================================
-
-export async function DELETE(
-  request: NextRequest
-) {
-  try {
-    await connectToDB();
-
-    // =======================================================
-    // GET ID
-    // =======================================================
-
-    const id =
-      request.nextUrl.searchParams.get(
-        "id"
-      );
-
-    if (
-      !id
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-
-          message:
-            "Principal Message ID is required.",
-
-          data: null,
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    // =======================================================
-    // DELETE
-    // =======================================================
-
-    const deleted =
-      await PrincipalMessageModel.findByIdAndDelete(
-        id
-      ).lean();
-
-    // =======================================================
-    // NOT FOUND
-    // =======================================================
-
-    if (
-      !deleted
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-
-          message:
-            "Principal Message not found.",
-
-          data: null,
-        },
-        {
-          status: 404,
-        }
-      );
-    }
-
-    // =======================================================
-    // SUCCESS
-    // =======================================================
-
-    return NextResponse.json(
-      {
-        success: true,
-
-        message:
-          "Principal Message deleted successfully.",
-
-        data: deleted,
-      },
-      {
-        status: 200,
-      }
-    );
-  } catch (error) {
-    console.error(
-      "DELETE PRINCIPAL MESSAGE ERROR:",
-      error
-    );
-
-    return NextResponse.json(
-      {
-        success: false,
-
-        message:
-          "Failed to delete Principal Message.",
-
-        data: null,
-      },
-      {
-        status: 500,
+        headers: corsHeaders,
       }
     );
   }
