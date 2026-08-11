@@ -1,125 +1,57 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-import { connectToDB } from "@/lib/connectToDB";
+import {connectToDB} from "@/lib/connectToDB";
 
 import News from "@/lib/models/News";
 
 // =========================================================
-// TYPES
+// CORS
 // =========================================================
 
-interface NewsRequestBody {
-  title?: string;
+function getCorsHeaders() {
+  return {
+    "Access-Control-Allow-Origin":
+      process.env.CLIENT_URL || "*",
 
-  slug?: string;
+    "Access-Control-Allow-Methods":
+      "GET, POST, PUT, DELETE, OPTIONS",
 
-  category?: string;
+    "Access-Control-Allow-Headers":
+      "Content-Type",
 
-  description?: string;
-
-  image?: string;
-
-  author?: string;
-
-  date?: string;
-
-  isPublished?: boolean;
-
-  order?: number;
+    "Access-Control-Allow-Credentials":
+      "true",
+  };
 }
 
 // =========================================================
-// CREATE SLUG
+// OPTIONS
 // =========================================================
 
-function createSlug(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(
-      /[^a-z0-9\s-]/g,
-      ""
-    )
-    .replace(
-      /\s+/g,
-      "-"
-    )
-    .replace(
-      /-+/g,
-      "-"
-    )
-    .replace(
-      /^-+|-+$/g,
-      ""
-    );
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+
+    headers:
+      getCorsHeaders(),
+  });
 }
 
 // =========================================================
-// MAKE UNIQUE SLUG
+// GET ALL NEWS
 // =========================================================
 
-async function createUniqueSlug(
-  requestedSlug: string,
-  title: string
-) {
-  const baseSlug =
-    createSlug(
-      requestedSlug
-    ) ||
-    createSlug(title);
-
-  if (!baseSlug) {
-    throw new Error(
-      "A valid title or slug is required."
-    );
-  }
-
-  let slug = baseSlug;
-
-  let counter = 1;
-
-  while (
-    await News.exists({
-      slug,
-    })
-  ) {
-    slug = `${baseSlug}-${counter}`;
-
-    counter += 1;
-  }
-
-  return slug;
-}
-
-// =========================================================
-// GET
-// =========================================================
-
-export async function GET(
-  request: NextRequest
-) {
+export async function GET() {
   try {
-    // =======================================================
-    // DATABASE
-    // =======================================================
-
     await connectToDB();
 
-    // =======================================================
-    // GET NEWS
-    // =======================================================
-
     const news =
-      await News.find()
+      await News.find({})
         .sort({
           order: 1,
           createdAt: -1,
         })
         .lean();
-
-    // =======================================================
-    // SUCCESS
-    // =======================================================
 
     return NextResponse.json(
       {
@@ -129,6 +61,9 @@ export async function GET(
       },
       {
         status: 200,
+
+        headers:
+          getCorsHeaders(),
       }
     );
   } catch (error) {
@@ -142,273 +77,35 @@ export async function GET(
         success: false,
 
         message:
-          "Failed to fetch News.",
+          "Failed to fetch news.",
       },
       {
         status: 500,
+
+        headers:
+          getCorsHeaders(),
       }
     );
   }
 }
 
 // =========================================================
-// POST
+// POST NEWS
 // =========================================================
 
 export async function POST(
-  request: NextRequest
+  request: Request
 ) {
   try {
-    // =======================================================
-    // DATABASE
-    // =======================================================
-
     await connectToDB();
 
-    // =======================================================
-    // REQUEST BODY
-    // =======================================================
-
     const body =
-      (await request.json()) as NewsRequestBody;
-
-    const {
-      title,
-      slug,
-      category,
-      description,
-      image,
-      author,
-      date,
-      isPublished,
-      order,
-    } = body;
-
-    // =======================================================
-    // VALIDATION — TITLE
-    // =======================================================
-
-    if (
-      typeof title !== "string" ||
-      !title.trim()
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-
-          message:
-            "News title is required.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    // =======================================================
-    // VALIDATION — CATEGORY
-    // =======================================================
-
-    if (
-      typeof category !==
-        "string" ||
-      !category.trim()
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-
-          message:
-            "News category is required.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    // =======================================================
-    // VALIDATION — DESCRIPTION
-    // =======================================================
-
-    if (
-      typeof description !==
-        "string" ||
-      !description.trim()
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-
-          message:
-            "News description is required.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    // =======================================================
-    // VALIDATION — IMAGE
-    // =======================================================
-
-    if (
-      typeof image !==
-        "string" ||
-      !image.trim()
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-
-          message:
-            "News image is required.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    // =======================================================
-    // VALIDATION — AUTHOR
-    // =======================================================
-
-    if (
-      typeof author !==
-        "string" ||
-      !author.trim()
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-
-          message:
-            "News author is required.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    // =======================================================
-    // VALIDATION — DATE
-    // =======================================================
-
-    if (
-      typeof date !== "string" ||
-      !date.trim()
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-
-          message:
-            "News date is required.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    const parsedDate =
-      new Date(
-        date
-      );
-
-    if (
-      Number.isNaN(
-        parsedDate.getTime()
-      )
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-
-          message:
-            "Invalid News date.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    // =======================================================
-    // SLUG
-    // =======================================================
-
-    const finalSlug =
-      await createUniqueSlug(
-        typeof slug ===
-          "string"
-          ? slug
-          : "",
-        title
-      );
-
-    // =======================================================
-    // ORDER
-    // =======================================================
-
-    const finalOrder =
-      typeof order ===
-        "number" &&
-      Number.isFinite(order) &&
-      order >= 0
-        ? order
-        : 0;
-
-    // =======================================================
-    // PUBLISHED
-    // =======================================================
-
-    const finalPublished =
-      typeof isPublished ===
-      "boolean"
-        ? isPublished
-        : true;
-
-    // =======================================================
-    // CREATE NEWS
-    // =======================================================
+      await request.json();
 
     const news =
-      await News.create({
-        title:
-          title.trim(),
-
-        slug:
-          finalSlug,
-
-        category:
-          category.trim(),
-
-        description:
-          description.trim(),
-
-        image:
-          image.trim(),
-
-        author:
-          author.trim(),
-
-        date:
-          parsedDate,
-
-        isPublished:
-          finalPublished,
-
-        order:
-          finalOrder,
-      });
-
-    // =======================================================
-    // SUCCESS
-    // =======================================================
+      await News.create(
+        body
+      );
 
     return NextResponse.json(
       {
@@ -421,6 +118,9 @@ export async function POST(
       },
       {
         status: 201,
+
+        headers:
+          getCorsHeaders(),
       }
     );
   } catch (error) {
@@ -429,34 +129,6 @@ export async function POST(
       error
     );
 
-    // =======================================================
-    // DUPLICATE SLUG
-    // =======================================================
-
-    if (
-      error &&
-      typeof error ===
-        "object" &&
-      "code" in error &&
-      error.code === 11000
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-
-          message:
-            "A News item with this slug already exists.",
-        },
-        {
-          status: 409,
-        }
-      );
-    }
-
-    // =======================================================
-    // NORMAL ERROR
-    // =======================================================
-
     return NextResponse.json(
       {
         success: false,
@@ -464,10 +136,13 @@ export async function POST(
         message:
           error instanceof Error
             ? error.message
-            : "Failed to create News.",
+            : "Failed to create news.",
       },
       {
         status: 500,
+
+        headers:
+          getCorsHeaders(),
       }
     );
   }
