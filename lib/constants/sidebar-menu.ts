@@ -69,8 +69,8 @@ export const sidebarMenu = [
         href: "/dashboard/home/student-feedback",
       },
       {
-        title: "Contact",
-        href: "/dashboard/home/contact",
+        title: "Newsletter",
+        href: "/dashboard/home/newsletter",
       },
     ],
   },
