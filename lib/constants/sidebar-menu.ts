@@ -61,6 +61,10 @@ export const sidebarMenu = [
         href: "/dashboard/home/alumni-event",
       },
       {
+        title: "News",
+        href: "/dashboard/home/news",
+      },
+      {
         title: "Contact",
         href: "/dashboard/home/contact",
       },
