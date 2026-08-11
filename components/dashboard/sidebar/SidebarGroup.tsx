@@ -1,24 +1,50 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, LucideIcon } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import {
+  useState,
+} from "react";
+
+import {
+  ChevronDown,
+  type LucideIcon,
+} from "lucide-react";
+
+import {
+  usePathname,
+} from "next/navigation";
+
+import {
+  AnimatePresence,
+  motion,
+} from "framer-motion";
 
 import SidebarItem from "./SidebarItem";
 
+// =========================================================
+// TYPES
+// =========================================================
+
 interface SidebarGroupItem {
   title: string;
+
   href: string;
 }
 
 interface SidebarGroupProps {
   title: string;
+
   icon: LucideIcon;
+
   items: SidebarGroupItem[];
+
   defaultOpen?: boolean;
+
   onItemClick?: () => void;
 }
+
+// =========================================================
+// COMPONENT
+// =========================================================
 
 export default function SidebarGroup({
   title,
@@ -27,27 +53,63 @@ export default function SidebarGroup({
   defaultOpen = false,
   onItemClick,
 }: SidebarGroupProps) {
-  const pathname = usePathname();
+  const pathname =
+    usePathname();
 
-  const hasActiveChild = items.some(
-    (item) =>
-      pathname === item.href ||
-      pathname.startsWith(`${item.href}/`)
+  // =======================================================
+  // ACTIVE CHILD
+  // =======================================================
+
+  const hasActiveChild =
+    items.some(
+      (item) =>
+        pathname ===
+          item.href ||
+        pathname.startsWith(
+          `${item.href}/`
+        )
+    );
+
+  // =======================================================
+  // MANUAL OPEN
+  // =======================================================
+
+  const [
+    manualOpen,
+    setManualOpen,
+  ] = useState(
+    defaultOpen
   );
 
-  const [manualOpen, setManualOpen] =
-    useState(defaultOpen);
+  // =======================================================
+  // OPEN STATE
+  // =======================================================
 
-  const open = hasActiveChild || manualOpen;
+  const open =
+    hasActiveChild ||
+    manualOpen;
+
+  // =======================================================
+  // RENDER
+  // =======================================================
 
   return (
-    <div className="rounded-2xl">
-      {/* Group Button */}
+    <div
+      className="
+        w-full
+      "
+    >
+      {/* =================================================
+          GROUP BUTTON
+      ================================================= */}
 
       <button
         type="button"
         onClick={() =>
-          setManualOpen((prev) => !prev)
+          setManualOpen(
+            (prev) =>
+              !prev
+          )
         }
         className="
           group
@@ -64,7 +126,17 @@ export default function SidebarGroup({
           hover:bg-slate-100
         "
       >
-        <div className="flex items-center gap-3">
+        {/* =================================================
+            LEFT
+        ================================================= */}
+
+        <div
+          className="
+            flex
+            items-center
+            gap-3
+          "
+        >
           <Icon
             size={20}
             className={`
@@ -92,24 +164,38 @@ export default function SidebarGroup({
           </span>
         </div>
 
+        {/* =================================================
+            ARROW
+        ================================================= */}
+
         <motion.div
           animate={{
-            rotate: open ? 180 : 0,
+            rotate:
+              open
+                ? 180
+                : 0,
           }}
           transition={{
-            duration: 0.2,
+            duration:
+              0.2,
           }}
         >
           <ChevronDown
             size={18}
-            className="text-slate-500"
+            className="
+              text-slate-500
+            "
           />
         </motion.div>
       </button>
 
-      {/* Children */}
+      {/* =================================================
+          CHILDREN
+      ================================================= */}
 
-      <AnimatePresence initial={false}>
+      <AnimatePresence
+        initial={false}
+      >
         {open && (
           <motion.div
             initial={{
@@ -117,7 +203,8 @@ export default function SidebarGroup({
               opacity: 0,
             }}
             animate={{
-              height: "auto",
+              height:
+                "auto",
               opacity: 1,
             }}
             exit={{
@@ -125,23 +212,45 @@ export default function SidebarGroup({
               opacity: 0,
             }}
             transition={{
-              duration: 0.25,
+              duration:
+                0.25,
             }}
-            className="overflow-hidden"
+            className="
+              overflow-hidden
+            "
           >
-            <div className="ml-5 mt-1 border-l-2 border-slate-200 pl-3 space-y-1">
-              {items.map((item) => (
-  <div
-    key={item.href}
-    onClick={onItemClick}
-  >
-    <SidebarItem
-      title={item.title}
-      href={item.href}
-      isChild
-    />
-  </div>
-))}
+            <div
+              className="
+                ml-5
+                mt-1
+                space-y-1
+                border-l-2
+                border-slate-200
+                pl-3
+              "
+            >
+              {items.map(
+                (item) => (
+                  <div
+                    key={
+                      item.title
+                    }
+                    onClick={
+                      onItemClick
+                    }
+                  >
+                    <SidebarItem
+                      title={
+                        item.title
+                      }
+                      href={
+                        item.href
+                      }
+                      isChild
+                    />
+                  </div>
+                )
+              )}
             </div>
           </motion.div>
         )}

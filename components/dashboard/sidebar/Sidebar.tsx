@@ -8,25 +8,26 @@ export default function Sidebar() {
   return (
     <aside
       className="
-        hidden
-        lg:flex
-        fixed
-        left-0
-        top-0
-        z-40
+        flex
         h-screen
-        w-72
+        w-[260px]
+        shrink-0
         flex-col
         border-r
         border-slate-200
         bg-white
-        shadow-sm
       "
     >
-      {/* Logo */}
+      {/* =================================================
+          HEADER
+      ================================================= */}
+
       <SidebarHeader />
 
-      {/* Menu */}
+      {/* =================================================
+          MENU
+      ================================================= */}
+
       <div
         className="
           flex-1
@@ -41,7 +42,10 @@ export default function Sidebar() {
         <SidebarMenu />
       </div>
 
-      {/* Footer */}
+      {/* =================================================
+          FOOTER
+      ================================================= */}
+
       <SidebarFooter />
     </aside>
   );

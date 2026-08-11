@@ -13,16 +13,75 @@ export default function DashboardLayout({
 }) {
   return (
     <DashboardProvider>
-      <div className="min-h-screen bg-slate-100">
-        <Sidebar />
+      <div
+        className="
+          min-h-screen
+          bg-slate-100
+        "
+      >
+        {/* =================================================
+            DESKTOP SIDEBAR
+        ================================================= */}
+
+        <div
+          className="
+            fixed
+            inset-y-0
+            left-0
+            z-40
+            hidden
+            w-[260px]
+            lg:block
+          "
+        >
+          <Sidebar />
+        </div>
+
+        {/* =================================================
+            MOBILE SIDEBAR
+        ================================================= */}
 
         <MobileSidebar />
 
-        <div className="min-h-screen lg:ml-72">
+        {/* =================================================
+            MAIN AREA
+        ================================================= */}
+
+        <div
+          className="
+            min-h-screen
+            lg:ml-[260px]
+          "
+        >
+          {/* =================================================
+              NAVBAR
+          ================================================= */}
+
           <Navbar />
 
-          <main className="px-4 pt-24 pb-6 sm:px-6 lg:px-8">
-            {children}
+          {/* =================================================
+              PAGE CONTENT
+          ================================================= */}
+
+          <main
+            className="
+              w-full
+              px-4
+              pb-8
+              pt-24
+              sm:px-6
+              lg:px-8
+            "
+          >
+            <div
+              className="
+                w-full
+                max-w-[1600px]
+                mx-auto
+              "
+            >
+              {children}
+            </div>
           </main>
         </div>
       </div>

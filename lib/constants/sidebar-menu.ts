@@ -53,6 +53,14 @@ export const sidebarMenu = [
         href: "/dashboard/home/principal-message",
       },
       {
+        title: "Campus Life",
+        href: "/dashboard/home/campus-life",
+      },
+      {
+        title: "Alumni Events",
+        href: "/dashboard/home/alumni-event",
+      },
+      {
         title: "Contact",
         href: "/dashboard/home/contact",
       },

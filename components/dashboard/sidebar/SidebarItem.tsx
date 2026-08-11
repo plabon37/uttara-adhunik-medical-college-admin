@@ -1,16 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { LucideIcon } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+
+import {
+  type LucideIcon,
+} from "lucide-react";
+
+import {
+  usePathname,
+} from "next/navigation";
+
+import {
+  motion,
+} from "framer-motion";
+
+// =========================================================
+// TYPES
+// =========================================================
 
 interface SidebarItemProps {
   title: string;
+
   href: string;
+
   icon?: LucideIcon;
+
   isChild?: boolean;
 }
+
+// =========================================================
+// COMPONENT
+// =========================================================
 
 export default function SidebarItem({
   title,
@@ -18,16 +38,34 @@ export default function SidebarItem({
   icon: Icon,
   isChild = false,
 }: SidebarItemProps) {
-  const pathname = usePathname();
+  const pathname =
+    usePathname();
+
+  // =======================================================
+  // ACTIVE
+  // =======================================================
 
   const isActive =
     pathname === href ||
-    pathname.startsWith(`${href}/`);
+    pathname.startsWith(
+      `${href}/`
+    );
+
+  // =======================================================
+  // RENDER
+  // =======================================================
 
   return (
     <Link
       href={href}
-      aria-current={isActive ? "page" : undefined}
+      aria-current={
+        isActive
+          ? "page"
+          : undefined
+      }
+      className="
+        block
+      "
     >
       <motion.div
         whileHover={{
@@ -37,7 +75,8 @@ export default function SidebarItem({
           scale: 0.98,
         }}
         transition={{
-          duration: 0.18,
+          duration:
+            0.18,
         }}
         className={`
           group
@@ -50,7 +89,7 @@ export default function SidebarItem({
           duration-200
           ${
             isChild
-              ? "ml-5 px-4 py-2.5"
+              ? "ml-0 px-4 py-2.5"
               : "px-4 py-3"
           }
           ${
@@ -60,25 +99,52 @@ export default function SidebarItem({
           }
         `}
       >
-        {/* Active Indicator */}
+        {/* =================================================
+            ACTIVE INDICATOR
+        ================================================= */}
+
         {isActive && (
-          <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-white" />
+          <span
+            className="
+              absolute
+              left-0
+              top-1/2
+              h-6
+              w-1
+              -translate-y-1/2
+              rounded-r-full
+              bg-white
+            "
+          />
         )}
 
-        {/* Icon */}
+        {/* =================================================
+            ICON
+        ================================================= */}
+
         {Icon && (
           <Icon
             size={20}
             className={
               isActive
                 ? "text-white"
-                : "text-slate-500 transition group-hover:text-teal-600"
+                : "text-slate-500 transition-colors group-hover:text-teal-600"
             }
           />
         )}
 
-        {/* Title */}
-        <span className="flex-1 truncate text-sm font-medium">
+        {/* =================================================
+            TITLE
+        ================================================= */}
+
+        <span
+          className="
+            flex-1
+            truncate
+            text-sm
+            font-medium
+          "
+        >
           {title}
         </span>
       </motion.div>
