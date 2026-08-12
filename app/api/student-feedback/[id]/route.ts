@@ -480,7 +480,7 @@ export async function DELETE(
   context: RouteContext
 ) {
   try {
-    await connectDB();
+    await connectToDB();
 
     const { id } =
       await context.params;
