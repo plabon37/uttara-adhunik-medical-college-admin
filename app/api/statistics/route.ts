@@ -5,14 +5,24 @@ import { StatisticsModel } from "@/lib/models/Statistics";
 export const runtime = "nodejs";
 
 // =========================================================
-// CORS
+// ALLOWED ORIGINS
 // =========================================================
 
 const allowedOrigins = [
+  process.env.NEXT_PUBLIC_CLIENT_URL,
+  process.env.CLIENT_URL,
+
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:3002",
-];
+].filter(
+  (origin): origin is string =>
+    Boolean(origin)
+);
+
+// =========================================================
+// CORS HEADERS
+// =========================================================
 
 function getCorsHeaders(
   origin: string | null
@@ -44,6 +54,11 @@ function getCorsHeaders(
     "true"
   );
 
+  headers.set(
+    "Vary",
+    "Origin"
+  );
+
   return headers;
 }
 
@@ -60,14 +75,15 @@ export async function OPTIONS(
 
   return new NextResponse(null, {
     status: 204,
-    headers: getCorsHeaders(origin),
+    headers:
+      getCorsHeaders(origin),
   });
 }
 
-/* =========================================================
-GET
-Get Statistics section
-========================================================= */
+// =========================================================
+// GET
+// Get Statistics section
+// =========================================================
 
 export async function GET(
   req: NextRequest
@@ -76,10 +92,23 @@ export async function GET(
     req.headers.get("origin");
 
   try {
+    // =====================================================
+    // DATABASE
+    // =====================================================
+
     await connectToDB();
 
+    // =====================================================
+    // FIND STATISTICS
+    // =====================================================
+
     const statistics =
-      await StatisticsModel.findOne().lean();
+      await StatisticsModel.findOne()
+        .lean();
+
+    // =====================================================
+    // NOT FOUND
+    // =====================================================
 
     if (!statistics) {
       return NextResponse.json(
@@ -95,6 +124,10 @@ export async function GET(
         }
       );
     }
+
+    // =====================================================
+    // SUCCESS
+    // =====================================================
 
     return NextResponse.json(
       {
@@ -128,10 +161,10 @@ export async function GET(
   }
 }
 
-/* =========================================================
-POST
-Create Statistics section
-========================================================= */
+// =========================================================
+// POST
+// Create Statistics section
+// =========================================================
 
 export async function POST(
   req: NextRequest
@@ -140,14 +173,22 @@ export async function POST(
     req.headers.get("origin");
 
   try {
+    // =====================================================
+    // DATABASE
+    // =====================================================
+
     await connectToDB();
+
+    // =====================================================
+    // BODY
+    // =====================================================
 
     const body =
       await req.json();
 
-    /* -------------------------------------------------------
-       CHECK EXISTING STATISTICS
-    ------------------------------------------------------- */
+    // =====================================================
+    // CHECK EXISTING STATISTICS
+    // =====================================================
 
     const existingStatistics =
       await StatisticsModel.findOne();
@@ -167,14 +208,18 @@ export async function POST(
       );
     }
 
-    /* -------------------------------------------------------
-       CREATE STATISTICS
-    ------------------------------------------------------- */
+    // =====================================================
+    // CREATE
+    // =====================================================
 
     const statistics =
       await StatisticsModel.create(
         body
       );
+
+    // =====================================================
+    // SUCCESS
+    // =====================================================
 
     return NextResponse.json(
       {
@@ -210,10 +255,10 @@ export async function POST(
   }
 }
 
-/* =========================================================
-PUT
-Update Statistics section
-========================================================= */
+// =========================================================
+// PUT
+// Update Statistics section
+// =========================================================
 
 export async function PUT(
   req: NextRequest
@@ -222,10 +267,22 @@ export async function PUT(
     req.headers.get("origin");
 
   try {
+    // =====================================================
+    // DATABASE
+    // =====================================================
+
     await connectToDB();
+
+    // =====================================================
+    // BODY
+    // =====================================================
 
     const body =
       await req.json();
+
+    // =====================================================
+    // UPDATE
+    // =====================================================
 
     const statistics =
       await StatisticsModel.findOneAndUpdate(
@@ -236,6 +293,10 @@ export async function PUT(
           runValidators: true,
         }
       );
+
+    // =====================================================
+    // NOT FOUND
+    // =====================================================
 
     if (!statistics) {
       return NextResponse.json(
@@ -251,6 +312,10 @@ export async function PUT(
         }
       );
     }
+
+    // =====================================================
+    // SUCCESS
+    // =====================================================
 
     return NextResponse.json(
       {
@@ -286,10 +351,10 @@ export async function PUT(
   }
 }
 
-/* =========================================================
-DELETE
-Delete Statistics section
-========================================================= */
+// =========================================================
+// DELETE
+// Delete Statistics section
+// =========================================================
 
 export async function DELETE(
   req: NextRequest
@@ -298,12 +363,24 @@ export async function DELETE(
     req.headers.get("origin");
 
   try {
+    // =====================================================
+    // DATABASE
+    // =====================================================
+
     await connectToDB();
+
+    // =====================================================
+    // DELETE
+    // =====================================================
 
     const statistics =
       await StatisticsModel.findOneAndDelete(
         {}
       );
+
+    // =====================================================
+    // NOT FOUND
+    // =====================================================
 
     if (!statistics) {
       return NextResponse.json(
@@ -319,6 +396,10 @@ export async function DELETE(
         }
       );
     }
+
+    // =====================================================
+    // SUCCESS
+    // =====================================================
 
     return NextResponse.json(
       {
