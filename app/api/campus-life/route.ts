@@ -1,49 +1,124 @@
-import { NextRequest, NextResponse } from "next/server";
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
 
 import { connectToDB } from "@/lib/connectToDB";
 import { CampusLifeModel } from "@/lib/models/CampusLife";
+
+export const runtime = "nodejs";
 
 // =========================================================
 // CORS
 // =========================================================
 
-const CLIENT_URL =
-  process.env.NEXT_PUBLIC_CLIENT_URL ||
-  "http://localhost:3001";
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  process.env.NEXT_PUBLIC_CLIENT_URL,
 
-function corsHeaders() {
-  return {
-    "Access-Control-Allow-Origin": CLIENT_URL,
-    "Access-Control-Allow-Methods":
-      "GET, POST, PUT, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers":
-      "Content-Type",
-  };
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3002",
+].filter(
+  (value): value is string =>
+    Boolean(value)
+);
+
+// =========================================================
+// CORS HEADERS
+// =========================================================
+
+function getCorsHeaders(
+  origin: string | null
+) {
+  const headers = new Headers();
+
+  if (
+    origin &&
+    allowedOrigins.includes(origin)
+  ) {
+    headers.set(
+      "Access-Control-Allow-Origin",
+      origin
+    );
+
+    headers.set(
+      "Vary",
+      "Origin"
+    );
+  }
+
+  headers.set(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+
+  headers.set(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
+
+  headers.set(
+    "Access-Control-Allow-Credentials",
+    "true"
+  );
+
+  return headers;
 }
 
 // =========================================================
 // OPTIONS
 // =========================================================
 
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: corsHeaders(),
-  });
+export async function OPTIONS(
+  request: NextRequest
+) {
+  const origin =
+    request.headers.get("origin");
+
+  return new NextResponse(
+    null,
+    {
+      status: 204,
+      headers:
+        getCorsHeaders(origin),
+    }
+  );
 }
 
 // =========================================================
 // GET
+// Get Campus Life
 // =========================================================
 
-export async function GET() {
+export async function GET(
+  request: NextRequest
+) {
+  const origin =
+    request.headers.get("origin");
+
   try {
+    // =====================================================
+    // DATABASE
+    // =====================================================
+
     await connectToDB();
 
+    // =====================================================
+    // FETCH CAMPUS LIFE
+    // =====================================================
+
     const campusLife =
-      await CampusLifeModel.findOne()
-        .sort({ createdAt: -1 })
+      await CampusLifeModel
+        .findOne()
+        .sort({
+          createdAt: -1,
+        })
         .lean();
+
+    // =====================================================
+    // SUCCESS
+    // =====================================================
 
     return NextResponse.json(
       {
@@ -52,7 +127,8 @@ export async function GET() {
       },
       {
         status: 200,
-        headers: corsHeaders(),
+        headers:
+          getCorsHeaders(origin),
       }
     );
   } catch (error) {
@@ -69,7 +145,8 @@ export async function GET() {
       },
       {
         status: 500,
-        headers: corsHeaders(),
+        headers:
+          getCorsHeaders(origin),
       }
     );
   }
@@ -77,13 +154,25 @@ export async function GET() {
 
 // =========================================================
 // POST
+// Create Campus Life
 // =========================================================
 
 export async function POST(
   request: NextRequest
 ) {
+  const origin =
+    request.headers.get("origin");
+
   try {
+    // =====================================================
+    // DATABASE
+    // =====================================================
+
     await connectToDB();
+
+    // =====================================================
+    // BODY
+    // =====================================================
 
     const body =
       await request.json();
@@ -97,7 +186,7 @@ export async function POST(
     } = body;
 
     // =====================================================
-    // VALIDATION
+    // VALIDATION - TAGLINE
     // =====================================================
 
     if (
@@ -112,10 +201,15 @@ export async function POST(
         },
         {
           status: 400,
-          headers: corsHeaders(),
+          headers:
+            getCorsHeaders(origin),
         }
       );
     }
+
+    // =====================================================
+    // VALIDATION - TITLE
+    // =====================================================
 
     if (
       typeof title !== "string" ||
@@ -129,14 +223,18 @@ export async function POST(
         },
         {
           status: 400,
-          headers: corsHeaders(),
+          headers:
+            getCorsHeaders(origin),
         }
       );
     }
 
+    // =====================================================
+    // VALIDATION - DESCRIPTION
+    // =====================================================
+
     if (
-      typeof description !==
-        "string" ||
+      typeof description !== "string" ||
       !description.trim()
     ) {
       return NextResponse.json(
@@ -147,10 +245,15 @@ export async function POST(
         },
         {
           status: 400,
-          headers: corsHeaders(),
+          headers:
+            getCorsHeaders(origin),
         }
       );
     }
+
+    // =====================================================
+    // VALIDATION - ITEMS
+    // =====================================================
 
     if (
       !Array.isArray(items) ||
@@ -164,7 +267,8 @@ export async function POST(
         },
         {
           status: 400,
-          headers: corsHeaders(),
+          headers:
+            getCorsHeaders(origin),
         }
       );
     }
@@ -185,7 +289,8 @@ export async function POST(
         },
         {
           status: 409,
-          headers: corsHeaders(),
+          headers:
+            getCorsHeaders(origin),
         }
       );
     }
@@ -277,7 +382,8 @@ export async function POST(
       },
       {
         status: 201,
-        headers: corsHeaders(),
+        headers:
+          getCorsHeaders(origin),
       }
     );
   } catch (error) {
@@ -294,7 +400,8 @@ export async function POST(
       },
       {
         status: 500,
-        headers: corsHeaders(),
+        headers:
+          getCorsHeaders(origin),
       }
     );
   }

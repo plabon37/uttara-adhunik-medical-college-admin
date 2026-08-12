@@ -9,10 +9,16 @@ export const runtime = "nodejs";
 // =========================================================
 
 const allowedOrigins = [
+  process.env.CLIENT_URL,
+  process.env.NEXT_PUBLIC_CLIENT_URL,
+
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:3002",
-];
+].filter(
+  (value): value is string =>
+    Boolean(value)
+);
 
 function getCorsHeaders(
   origin: string | null
@@ -26,6 +32,11 @@ function getCorsHeaders(
     headers.set(
       "Access-Control-Allow-Origin",
       origin
+    );
+
+    headers.set(
+      "Vary",
+      "Origin"
     );
   }
 
@@ -59,14 +70,15 @@ export async function OPTIONS(
 
   return new NextResponse(null, {
     status: 204,
-    headers: getCorsHeaders(origin),
+    headers:
+      getCorsHeaders(origin),
   });
 }
 
-/* =========================================================
-GET
-Get all Departments
-========================================================= */
+// =========================================================
+// GET
+// Get all Departments
+// =========================================================
 
 export async function GET(
   req: NextRequest
@@ -117,10 +129,10 @@ export async function GET(
   }
 }
 
-/* =========================================================
-POST
-Create Department
-========================================================= */
+// =========================================================
+// POST
+// Create Department
+// =========================================================
 
 export async function POST(
   req: NextRequest

@@ -7,9 +7,10 @@ import AlumniEvent from "@/lib/models/AlumniEvent";
 // CORS
 // =========================================================
 
-const CLIENT_URL =
+const CLIENT_URL = (
   process.env.NEXT_PUBLIC_CLIENT_URL ||
-  "http://localhost:3001";
+  "http://localhost:3001"
+).replace(/\/+$/, "");
 
 function corsHeaders() {
   return {

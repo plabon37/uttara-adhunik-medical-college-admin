@@ -4,7 +4,6 @@ import {
 } from "next/server";
 
 import { connectToDB } from "@/lib/connectToDB";
-
 import {
   FacilitiesModel,
 } from "@/lib/models/Facilities";
@@ -13,18 +12,27 @@ import {
 // RUNTIME
 // =========================================================
 
-export const runtime =
-  "nodejs";
+export const runtime = "nodejs";
 
 // =========================================================
 // CORS
 // =========================================================
 
 const allowedOrigins = [
+  process.env.CLIENT_URL,
+  process.env.NEXT_PUBLIC_CLIENT_URL,
+
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:3002",
-];
+].filter(
+  (value): value is string =>
+    Boolean(value)
+);
+
+// =========================================================
+// CORS HEADERS
+// =========================================================
 
 function getCorsHeaders(
   origin: string | null
@@ -34,13 +42,16 @@ function getCorsHeaders(
 
   if (
     origin &&
-    allowedOrigins.includes(
-      origin
-    )
+    allowedOrigins.includes(origin)
   ) {
     headers.set(
       "Access-Control-Allow-Origin",
       origin
+    );
+
+    headers.set(
+      "Vary",
+      "Origin"
     );
   }
 
@@ -79,9 +90,7 @@ export async function OPTIONS(
     {
       status: 204,
       headers:
-        getCorsHeaders(
-          origin
-        ),
+        getCorsHeaders(origin),
     }
   );
 }
@@ -123,13 +132,11 @@ export async function GET(
       return NextResponse.json(
         {
           success: false,
-
           message:
             "Facilities section not found.",
         },
         {
           status: 404,
-
           headers:
             getCorsHeaders(
               origin
@@ -143,7 +150,9 @@ export async function GET(
     // =====================================================
 
     const sortedFacilities =
-      [...facilities.facilities].sort(
+      [
+        ...facilities.facilities,
+      ].sort(
         (a, b) =>
           a.order - b.order
       );
@@ -165,7 +174,6 @@ export async function GET(
       },
       {
         status: 200,
-
         headers:
           getCorsHeaders(
             origin
@@ -185,13 +193,11 @@ export async function GET(
     return NextResponse.json(
       {
         success: false,
-
         message:
           "Failed to fetch Facilities section.",
       },
       {
         status: 500,
-
         headers:
           getCorsHeaders(
             origin
@@ -234,13 +240,11 @@ export async function POST(
       return NextResponse.json(
         {
           success: false,
-
           message:
             "Facilities section already exists.",
         },
         {
           status: 409,
-
           headers:
             getCorsHeaders(
               origin
@@ -272,15 +276,13 @@ export async function POST(
     return NextResponse.json(
       {
         success: true,
-
         message:
           "Facilities section created successfully.",
-
-        data: facilities,
+        data:
+          facilities,
       },
       {
         status: 201,
-
         headers:
           getCorsHeaders(
             origin
@@ -300,13 +302,11 @@ export async function POST(
     return NextResponse.json(
       {
         success: false,
-
         message:
           "Failed to create Facilities section.",
       },
       {
         status: 500,
-
         headers:
           getCorsHeaders(
             origin
@@ -353,7 +353,6 @@ export async function PUT(
         body,
         {
           new: true,
-
           runValidators: true,
         }
       );
@@ -366,13 +365,11 @@ export async function PUT(
       return NextResponse.json(
         {
           success: false,
-
           message:
             "Facilities section not found.",
         },
         {
           status: 404,
-
           headers:
             getCorsHeaders(
               origin
@@ -388,15 +385,13 @@ export async function PUT(
     return NextResponse.json(
       {
         success: true,
-
         message:
           "Facilities section updated successfully.",
-
-        data: facilities,
+        data:
+          facilities,
       },
       {
         status: 200,
-
         headers:
           getCorsHeaders(
             origin
@@ -416,13 +411,11 @@ export async function PUT(
     return NextResponse.json(
       {
         success: false,
-
         message:
           "Failed to update Facilities section.",
       },
       {
         status: 500,
-
         headers:
           getCorsHeaders(
             origin
@@ -469,13 +462,11 @@ export async function DELETE(
       return NextResponse.json(
         {
           success: false,
-
           message:
             "Facilities section not found.",
         },
         {
           status: 404,
-
           headers:
             getCorsHeaders(
               origin
@@ -491,13 +482,11 @@ export async function DELETE(
     return NextResponse.json(
       {
         success: true,
-
         message:
           "Facilities section deleted successfully.",
       },
       {
         status: 200,
-
         headers:
           getCorsHeaders(
             origin
@@ -517,13 +506,11 @@ export async function DELETE(
     return NextResponse.json(
       {
         success: false,
-
         message:
           "Failed to delete Facilities section.",
       },
       {
         status: 500,
-
         headers:
           getCorsHeaders(
             origin

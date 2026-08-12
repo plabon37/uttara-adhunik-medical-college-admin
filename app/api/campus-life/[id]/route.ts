@@ -1,10 +1,110 @@
-import { NextRequest, NextResponse } from "next/server";
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
+
 import mongoose from "mongoose";
 
 import { connectToDB } from "@/lib/connectToDB";
 import { CampusLifeModel } from "@/lib/models/CampusLife";
 
+export const runtime = "nodejs";
+
+// =========================================================
+// CORS
+// =========================================================
+
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  process.env.NEXT_PUBLIC_CLIENT_URL,
+
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3002",
+].filter(
+  (value): value is string =>
+    Boolean(value)
+);
+
+// =========================================================
+// CORS HEADERS
+// =========================================================
+
+function getCorsHeaders(
+  origin: string | null
+) {
+  const headers = new Headers();
+
+  if (
+    origin &&
+    allowedOrigins.includes(origin)
+  ) {
+    headers.set(
+      "Access-Control-Allow-Origin",
+      origin
+    );
+
+    headers.set(
+      "Vary",
+      "Origin"
+    );
+  }
+
+  headers.set(
+    "Access-Control-Allow-Methods",
+    "GET, PUT, DELETE, OPTIONS"
+  );
+
+  headers.set(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
+
+  headers.set(
+    "Access-Control-Allow-Credentials",
+    "true"
+  );
+
+  return headers;
+}
+
+// =========================================================
+// RESPONSE HELPER
+// =========================================================
+
+function jsonResponse(
+  data: unknown,
+  status: number,
+  origin: string | null
+) {
+  return NextResponse.json(
+    data,
+    {
+      status,
+      headers:
+        getCorsHeaders(origin),
+    }
+  );
+}
+
+// =========================================================
+// VALIDATE ID
+// =========================================================
+
+function validateId(
+  id: string
+) {
+  return mongoose.Types.ObjectId.isValid(
+    id
+  );
+}
+
+// =========================================================
+// PREPARE ITEMS
+// =========================================================
+
 interface CampusLifeItemInput {
+  _id?: string;
   title?: string;
   image?: string;
   link?: string;
@@ -12,228 +112,534 @@ interface CampusLifeItemInput {
   order?: number;
 }
 
-function prepareItems(items: CampusLifeItemInput[]) {
-  return items.map((item, index) => ({
-    title: typeof item.title === "string" ? item.title.trim() : "",
-    image: typeof item.image === "string" ? item.image.trim() : "",
-    link:
-      typeof item.link === "string" && item.link.trim()
-        ? item.link.trim()
-        : "#",
-    isActive:
-      typeof item.isActive === "boolean" ? item.isActive : true,
-    order: typeof item.order === "number" ? item.order : index,
-  }));
+function prepareItems(
+  items: CampusLifeItemInput[]
+) {
+  return items.map(
+    (
+      item,
+      index
+    ) => ({
+      ...(item._id
+        ? {
+            _id: item._id,
+          }
+        : {}),
+
+      title:
+        typeof item.title ===
+        "string"
+          ? item.title.trim()
+          : "",
+
+      image:
+        typeof item.image ===
+        "string"
+          ? item.image.trim()
+          : "",
+
+      link:
+        typeof item.link ===
+          "string" &&
+        item.link.trim()
+          ? item.link.trim()
+          : "#",
+
+      isActive:
+        typeof item.isActive ===
+        "boolean"
+          ? item.isActive
+          : true,
+
+      order:
+        typeof item.order ===
+        "number"
+          ? item.order
+          : index,
+    })
+  );
 }
 
-function getErrorMessage(error: unknown) {
-  if (error instanceof Error) return error.message;
-  return "Unknown server error.";
-}
-
-function validateId(id: string) {
-  return mongoose.Types.ObjectId.isValid(id);
-}
+// =========================================================
+// GET BY ID
+// =========================================================
 
 export async function GET(
-  _request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  request: NextRequest,
+  context: {
+    params: Promise<{
+      id: string;
+    }>;
+  }
 ) {
-  try {
-    await connectToDB();
+  const origin =
+    request.headers.get("origin");
 
-    const { id } = await context.params;
+  try {
+    // =====================================================
+    // PARAMS
+    // =====================================================
+
+    const {
+      id,
+    } = await context.params;
+
+    // =====================================================
+    // VALIDATE ID
+    // =====================================================
 
     if (!validateId(id)) {
-      return NextResponse.json(
+      return jsonResponse(
         {
           success: false,
-          message: "Invalid Campus Life ID.",
+          message:
+            "Invalid Campus Life ID.",
         },
-        { status: 400 }
+        400,
+        origin
       );
     }
 
-    const campusLife = await CampusLifeModel.findById(id).lean();
+    // =====================================================
+    // DATABASE
+    // =====================================================
+
+    await connectToDB();
+
+    // =====================================================
+    // FIND
+    // =====================================================
+
+    const campusLife =
+      await CampusLifeModel
+        .findById(id)
+        .lean();
+
+    // =====================================================
+    // NOT FOUND
+    // =====================================================
 
     if (!campusLife) {
-      return NextResponse.json(
+      return jsonResponse(
         {
           success: false,
-          message: "Campus Life not found.",
+          message:
+            "Campus Life not found.",
         },
-        { status: 404 }
+        404,
+        origin
       );
     }
 
-    return NextResponse.json(
+    // =====================================================
+    // SUCCESS
+    // =====================================================
+
+    return jsonResponse(
       {
         success: true,
         data: campusLife,
       },
-      { status: 200 }
+      200,
+      origin
     );
   } catch (error) {
-    console.error("GET CAMPUS LIFE BY ID ERROR:", error);
+    console.error(
+      "GET CAMPUS LIFE BY ID ERROR:",
+      error
+    );
 
-    return NextResponse.json(
+    return jsonResponse(
       {
         success: false,
-        message: "Failed to fetch Campus Life.",
-        error: getErrorMessage(error),
+        message:
+          "Failed to fetch Campus Life.",
       },
-      { status: 500 }
+      500,
+      origin
     );
   }
 }
+
+// =========================================================
+// PUT
+// Update Campus Life
+// =========================================================
 
 export async function PUT(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: {
+    params: Promise<{
+      id: string;
+    }>;
+  }
 ) {
-  try {
-    await connectToDB();
+  const origin =
+    request.headers.get("origin");
 
-    const { id } = await context.params;
+  try {
+    // =====================================================
+    // PARAMS
+    // =====================================================
+
+    const {
+      id,
+    } = await context.params;
+
+    // =====================================================
+    // VALIDATE ID
+    // =====================================================
 
     if (!validateId(id)) {
-      return NextResponse.json(
+      return jsonResponse(
         {
           success: false,
-          message: "Invalid Campus Life ID.",
+          message:
+            "Invalid Campus Life ID.",
         },
-        { status: 400 }
+        400,
+        origin
       );
     }
 
-    const body = await request.json();
+    // =====================================================
+    // DATABASE
+    // =====================================================
 
-    const { tagline, title, description, items, isActive } = body;
+    await connectToDB();
 
-    if (typeof tagline !== "string" || !tagline.trim()) {
-      return NextResponse.json(
-        { success: false, message: "Tagline is required." },
-        { status: 400 }
-      );
-    }
+    // =====================================================
+    // BODY
+    // =====================================================
 
-    if (typeof title !== "string" || !title.trim()) {
-      return NextResponse.json(
-        { success: false, message: "Title is required." },
-        { status: 400 }
-      );
-    }
+    const body =
+      await request.json();
 
-    if (typeof description !== "string" || !description.trim()) {
-      return NextResponse.json(
-        { success: false, message: "Description is required." },
-        { status: 400 }
-      );
-    }
+    const {
+      tagline,
+      title,
+      description,
+      items,
+      isActive,
+    } = body;
 
-    if (!Array.isArray(items) || items.length === 0) {
-      return NextResponse.json(
+    // =====================================================
+    // VALIDATION
+    // =====================================================
+
+    if (
+      typeof tagline !== "string" ||
+      !tagline.trim()
+    ) {
+      return jsonResponse(
         {
           success: false,
-          message: "At least one Campus Life item is required.",
+          message:
+            "Tagline is required.",
         },
-        { status: 400 }
+        400,
+        origin
       );
     }
 
-    const existing = await CampusLifeModel.findById(id);
+    if (
+      typeof title !== "string" ||
+      !title.trim()
+    ) {
+      return jsonResponse(
+        {
+          success: false,
+          message:
+            "Title is required.",
+        },
+        400,
+        origin
+      );
+    }
+
+    if (
+      typeof description !== "string" ||
+      !description.trim()
+    ) {
+      return jsonResponse(
+        {
+          success: false,
+          message:
+            "Description is required.",
+        },
+        400,
+        origin
+      );
+    }
+
+    if (
+      !Array.isArray(items) ||
+      items.length === 0
+    ) {
+      return jsonResponse(
+        {
+          success: false,
+          message:
+            "At least one Campus Life item is required.",
+        },
+        400,
+        origin
+      );
+    }
+
+    // =====================================================
+    // PREPARE ITEMS
+    // =====================================================
+
+    const preparedItems =
+      prepareItems(items);
+
+    // =====================================================
+    // VALIDATE ITEMS
+    // =====================================================
+
+    for (
+      let index = 0;
+      index <
+      preparedItems.length;
+      index++
+    ) {
+      const item =
+        preparedItems[index];
+
+      if (!item.title) {
+        return jsonResponse(
+          {
+            success: false,
+            message:
+              `Campus Life item ${
+                index + 1
+              } title is required.`,
+          },
+          400,
+          origin
+        );
+      }
+
+      if (!item.image) {
+        return jsonResponse(
+          {
+            success: false,
+            message:
+              `Campus Life item ${
+                index + 1
+              } image is required.`,
+          },
+          400,
+          origin
+        );
+      }
+    }
+
+    // =====================================================
+    // FIND EXISTING
+    // =====================================================
+
+    const existing =
+      await CampusLifeModel.findById(
+        id
+      );
 
     if (!existing) {
-      return NextResponse.json(
+      return jsonResponse(
         {
           success: false,
-          message: "Campus Life not found.",
+          message:
+            "Campus Life not found.",
         },
-        { status: 404 }
+        404,
+        origin
       );
     }
 
-    existing.tagline = tagline.trim();
-    existing.title = title.trim();
-    existing.description = description.trim();
-    existing.items = prepareItems(items) as typeof existing.items;
+    // =====================================================
+    // UPDATE FIELDS
+    // =====================================================
+
+    existing.tagline =
+      tagline.trim();
+
+    existing.title =
+      title.trim();
+
+    existing.description =
+      description.trim();
+
+    existing.items =
+      preparedItems as typeof existing.items;
+
     existing.isActive =
-      typeof isActive === "boolean" ? isActive : true;
+      typeof isActive ===
+      "boolean"
+        ? isActive
+        : true;
+
+    // =====================================================
+    // SAVE
+    // =====================================================
 
     await existing.validate();
-    const updated = await existing.save();
 
-    return NextResponse.json(
+    const updated =
+      await existing.save();
+
+    // =====================================================
+    // SUCCESS
+    // =====================================================
+
+    return jsonResponse(
       {
         success: true,
-        message: "Campus Life updated successfully.",
+        message:
+          "Campus Life updated successfully.",
         data: updated,
       },
-      { status: 200 }
+      200,
+      origin
     );
   } catch (error) {
-    console.error("UPDATE CAMPUS LIFE ERROR:", error);
+    console.error(
+      "UPDATE CAMPUS LIFE ERROR:",
+      error
+    );
 
-    return NextResponse.json(
+    return jsonResponse(
       {
         success: false,
-        message: "Failed to update Campus Life.",
-        error: getErrorMessage(error),
+        message:
+          "Failed to update Campus Life.",
       },
-      { status: 500 }
+      500,
+      origin
     );
   }
 }
 
-export async function DELETE(
-  _request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
-  try {
-    await connectToDB();
+// =========================================================
+// DELETE
+// Delete Campus Life
+// =========================================================
 
-    const { id } = await context.params;
+export async function DELETE(
+  request: NextRequest,
+  context: {
+    params: Promise<{
+      id: string;
+    }>;
+  }
+) {
+  const origin =
+    request.headers.get("origin");
+
+  try {
+    // =====================================================
+    // PARAMS
+    // =====================================================
+
+    const {
+      id,
+    } = await context.params;
+
+    // =====================================================
+    // VALIDATE ID
+    // =====================================================
 
     if (!validateId(id)) {
-      return NextResponse.json(
+      return jsonResponse(
         {
           success: false,
-          message: "Invalid Campus Life ID.",
+          message:
+            "Invalid Campus Life ID.",
         },
-        { status: 400 }
+        400,
+        origin
       );
     }
 
-    const deleted = await CampusLifeModel.findByIdAndDelete(id);
+    // =====================================================
+    // DATABASE
+    // =====================================================
+
+    await connectToDB();
+
+    // =====================================================
+    // DELETE
+    // =====================================================
+
+    const deleted =
+      await CampusLifeModel.findByIdAndDelete(
+        id
+      );
+
+    // =====================================================
+    // NOT FOUND
+    // =====================================================
 
     if (!deleted) {
-      return NextResponse.json(
+      return jsonResponse(
         {
           success: false,
-          message: "Campus Life not found.",
+          message:
+            "Campus Life not found.",
         },
-        { status: 404 }
+        404,
+        origin
       );
     }
 
-    return NextResponse.json(
+    // =====================================================
+    // SUCCESS
+    // =====================================================
+
+    return jsonResponse(
       {
         success: true,
-        message: "Campus Life deleted successfully.",
+        message:
+          "Campus Life deleted successfully.",
         data: deleted,
       },
-      { status: 200 }
+      200,
+      origin
     );
   } catch (error) {
-    console.error("DELETE CAMPUS LIFE ERROR:", error);
+    console.error(
+      "DELETE CAMPUS LIFE ERROR:",
+      error
+    );
 
-    return NextResponse.json(
+    return jsonResponse(
       {
         success: false,
-        message: "Failed to delete Campus Life.",
-        error: getErrorMessage(error),
+        message:
+          "Failed to delete Campus Life.",
       },
-      { status: 500 }
+      500,
+      origin
     );
   }
+}
+
+// =========================================================
+// OPTIONS
+// =========================================================
+
+export async function OPTIONS(
+  request: NextRequest
+) {
+  const origin =
+    request.headers.get("origin");
+
+  return new NextResponse(
+    null,
+    {
+      status: 204,
+      headers:
+        getCorsHeaders(origin),
+    }
+  );
 }

@@ -13,10 +13,16 @@ export const runtime = "nodejs";
 // =========================================================
 
 const allowedOrigins = [
+  process.env.CLIENT_URL,
+  process.env.NEXT_PUBLIC_CLIENT_URL,
+
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:3002",
-];
+].filter(
+  (value): value is string =>
+    Boolean(value)
+);
 
 // =========================================================
 // CORS HEADERS
@@ -35,6 +41,11 @@ function getCorsHeaders(
     headers.set(
       "Access-Control-Allow-Origin",
       origin
+    );
+
+    headers.set(
+      "Vary",
+      "Origin"
     );
   }
 
@@ -88,16 +99,24 @@ export async function GET(
     req.headers.get("origin");
 
   try {
+    // =====================================================
+    // DATABASE
+    // =====================================================
+
     await connectToDB();
+
+    // =====================================================
+    // FETCH ADMISSION
+    // =====================================================
 
     const admission =
       await AdmissionModel
         .findOne()
         .lean();
 
-    // =======================================================
+    // =====================================================
     // NOT FOUND
-    // =======================================================
+    // =====================================================
 
     if (!admission) {
       return NextResponse.json(
@@ -109,16 +128,14 @@ export async function GET(
         {
           status: 404,
           headers:
-            getCorsHeaders(
-              origin
-            ),
+            getCorsHeaders(origin),
         }
       );
     }
 
-    // =======================================================
+    // =====================================================
     // SUCCESS
-    // =======================================================
+    // =====================================================
 
     return NextResponse.json(
       {
@@ -128,9 +145,7 @@ export async function GET(
       {
         status: 200,
         headers:
-          getCorsHeaders(
-            origin
-          ),
+          getCorsHeaders(origin),
       }
     );
   } catch (error) {
@@ -148,9 +163,7 @@ export async function GET(
       {
         status: 500,
         headers:
-          getCorsHeaders(
-            origin
-          ),
+          getCorsHeaders(origin),
       }
     );
   }
@@ -168,14 +181,22 @@ export async function POST(
     req.headers.get("origin");
 
   try {
+    // =====================================================
+    // DATABASE
+    // =====================================================
+
     await connectToDB();
+
+    // =====================================================
+    // READ BODY
+    // =====================================================
 
     const body =
       await req.json();
 
-    // =======================================================
+    // =====================================================
     // CHECK EXISTING
-    // =======================================================
+    // =====================================================
 
     const existingAdmission =
       await AdmissionModel.findOne();
@@ -186,29 +207,28 @@ export async function POST(
           success: false,
           message:
             "Admission section already exists.",
+          data: existingAdmission,
         },
         {
           status: 409,
           headers:
-            getCorsHeaders(
-              origin
-            ),
+            getCorsHeaders(origin),
         }
       );
     }
 
-    // =======================================================
+    // =====================================================
     // CREATE
-    // =======================================================
+    // =====================================================
 
     const admission =
       await AdmissionModel.create(
         body
       );
 
-    // =======================================================
+    // =====================================================
     // SUCCESS
-    // =======================================================
+    // =====================================================
 
     return NextResponse.json(
       {
@@ -220,9 +240,7 @@ export async function POST(
       {
         status: 201,
         headers:
-          getCorsHeaders(
-            origin
-          ),
+          getCorsHeaders(origin),
       }
     );
   } catch (error) {
@@ -240,9 +258,7 @@ export async function POST(
       {
         status: 500,
         headers:
-          getCorsHeaders(
-            origin
-          ),
+          getCorsHeaders(origin),
       }
     );
   }
@@ -260,14 +276,22 @@ export async function PUT(
     req.headers.get("origin");
 
   try {
+    // =====================================================
+    // DATABASE
+    // =====================================================
+
     await connectToDB();
+
+    // =====================================================
+    // READ BODY
+    // =====================================================
 
     const body =
       await req.json();
 
-    // =======================================================
+    // =====================================================
     // UPDATE
-    // =======================================================
+    // =====================================================
 
     const admission =
       await AdmissionModel.findOneAndUpdate(
@@ -279,9 +303,9 @@ export async function PUT(
         }
       );
 
-    // =======================================================
+    // =====================================================
     // NOT FOUND
-    // =======================================================
+    // =====================================================
 
     if (!admission) {
       return NextResponse.json(
@@ -293,16 +317,14 @@ export async function PUT(
         {
           status: 404,
           headers:
-            getCorsHeaders(
-              origin
-            ),
+            getCorsHeaders(origin),
         }
       );
     }
 
-    // =======================================================
+    // =====================================================
     // SUCCESS
-    // =======================================================
+    // =====================================================
 
     return NextResponse.json(
       {
@@ -314,9 +336,7 @@ export async function PUT(
       {
         status: 200,
         headers:
-          getCorsHeaders(
-            origin
-          ),
+          getCorsHeaders(origin),
       }
     );
   } catch (error) {
@@ -334,9 +354,7 @@ export async function PUT(
       {
         status: 500,
         headers:
-          getCorsHeaders(
-            origin
-          ),
+          getCorsHeaders(origin),
       }
     );
   }
@@ -354,16 +372,24 @@ export async function DELETE(
     req.headers.get("origin");
 
   try {
+    // =====================================================
+    // DATABASE
+    // =====================================================
+
     await connectToDB();
+
+    // =====================================================
+    // DELETE
+    // =====================================================
 
     const admission =
       await AdmissionModel.findOneAndDelete(
         {}
       );
 
-    // =======================================================
+    // =====================================================
     // NOT FOUND
-    // =======================================================
+    // =====================================================
 
     if (!admission) {
       return NextResponse.json(
@@ -375,16 +401,14 @@ export async function DELETE(
         {
           status: 404,
           headers:
-            getCorsHeaders(
-              origin
-            ),
+            getCorsHeaders(origin),
         }
       );
     }
 
-    // =======================================================
+    // =====================================================
     // SUCCESS
-    // =======================================================
+    // =====================================================
 
     return NextResponse.json(
       {
@@ -395,9 +419,7 @@ export async function DELETE(
       {
         status: 200,
         headers:
-          getCorsHeaders(
-            origin
-          ),
+          getCorsHeaders(origin),
       }
     );
   } catch (error) {
@@ -415,10 +437,8 @@ export async function DELETE(
       {
         status: 500,
         headers:
-          getCorsHeaders(
-            origin
-          ),
-      }
+          getCorsHeaders(origin),
+        }
     );
   }
 }

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { connectToDB } from "@/lib/connectToDB";
-
 import { DepartmentSectionModel } from "@/lib/models/DepartmentSection";
 
 export const runtime = "nodejs";
@@ -11,10 +10,16 @@ export const runtime = "nodejs";
 // =========================================================
 
 const allowedOrigins = [
+  process.env.CLIENT_URL,
+  process.env.NEXT_PUBLIC_CLIENT_URL,
+
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:3002",
-];
+].filter(
+  (value): value is string =>
+    Boolean(value)
+);
 
 function getCorsHeaders(
   origin: string | null
@@ -28,6 +33,11 @@ function getCorsHeaders(
     headers.set(
       "Access-Control-Allow-Origin",
       origin
+    );
+
+    headers.set(
+      "Vary",
+      "Origin"
     );
   }
 
@@ -78,12 +88,24 @@ export async function GET(
     req.headers.get("origin");
 
   try {
+    // =====================================================
+    // DATABASE
+    // =====================================================
+
     await connectToDB();
+
+    // =====================================================
+    // FETCH SECTION
+    // =====================================================
 
     const section =
       await DepartmentSectionModel
         .findOne()
         .lean();
+
+    // =====================================================
+    // NOT FOUND
+    // =====================================================
 
     if (!section) {
       return NextResponse.json(
@@ -99,6 +121,10 @@ export async function GET(
         }
       );
     }
+
+    // =====================================================
+    // SUCCESS
+    // =====================================================
 
     return NextResponse.json(
       {
@@ -144,6 +170,10 @@ export async function POST(
     req.headers.get("origin");
 
   try {
+    // =====================================================
+    // DATABASE
+    // =====================================================
+
     await connectToDB();
 
     // =====================================================
@@ -196,7 +226,8 @@ export async function POST(
         : "";
 
     const searchPlaceholder =
-      typeof body.searchPlaceholder === "string"
+      typeof body.searchPlaceholder ===
+      "string"
         ? body.searchPlaceholder.trim()
         : "";
 
@@ -216,12 +247,15 @@ export async function POST(
         : "";
 
     const studentCountText =
-      typeof body.studentCountText === "string"
+      typeof body.studentCountText ===
+      "string"
         ? body.studentCountText.trim()
         : "";
 
     const popularSearches =
-      Array.isArray(body.popularSearches)
+      Array.isArray(
+        body.popularSearches
+      )
         ? body.popularSearches
             .filter(
               (item: unknown) =>
@@ -253,7 +287,9 @@ export async function POST(
     }
 
     if (!description) {
-      missingFields.push("description");
+      missingFields.push(
+        "description"
+      );
     }
 
     if (!searchPlaceholder) {
@@ -286,7 +322,9 @@ export async function POST(
     // VALIDATION ERROR
     // =====================================================
 
-    if (missingFields.length > 0) {
+    if (
+      missingFields.length > 0
+    ) {
       return NextResponse.json(
         {
           success: false,
@@ -307,25 +345,19 @@ export async function POST(
     // =====================================================
 
     const section =
-      await DepartmentSectionModel.create({
-        title,
-
-        description,
-
-        searchPlaceholder,
-
-        popularSearches,
-
-        imageOne,
-
-        imageTwo,
-
-        studentCount,
-
-        studentCountText,
-
-        isActive,
-      });
+      await DepartmentSectionModel.create(
+        {
+          title,
+          description,
+          searchPlaceholder,
+          popularSearches,
+          imageOne,
+          imageTwo,
+          studentCount,
+          studentCountText,
+          isActive,
+        }
+      );
 
     // =====================================================
     // SUCCESS
@@ -433,10 +465,22 @@ export async function PUT(
     req.headers.get("origin");
 
   try {
+    // =====================================================
+    // DATABASE
+    // =====================================================
+
     await connectToDB();
+
+    // =====================================================
+    // READ BODY
+    // =====================================================
 
     const body =
       await req.json();
+
+    // =====================================================
+    // UPDATE SECTION
+    // =====================================================
 
     const section =
       await DepartmentSectionModel.findOneAndUpdate(
@@ -447,6 +491,10 @@ export async function PUT(
           runValidators: true,
         }
       );
+
+    // =====================================================
+    // NOT FOUND
+    // =====================================================
 
     if (!section) {
       return NextResponse.json(
@@ -462,6 +510,10 @@ export async function PUT(
         }
       );
     }
+
+    // =====================================================
+    // SUCCESS
+    // =====================================================
 
     return NextResponse.json(
       {
@@ -511,12 +563,24 @@ export async function DELETE(
     req.headers.get("origin");
 
   try {
+    // =====================================================
+    // DATABASE
+    // =====================================================
+
     await connectToDB();
+
+    // =====================================================
+    // DELETE SECTION
+    // =====================================================
 
     const section =
       await DepartmentSectionModel.findOneAndDelete(
         {}
       );
+
+    // =====================================================
+    // NOT FOUND
+    // =====================================================
 
     if (!section) {
       return NextResponse.json(
@@ -532,6 +596,10 @@ export async function DELETE(
         }
       );
     }
+
+    // =====================================================
+    // SUCCESS
+    // =====================================================
 
     return NextResponse.json(
       {

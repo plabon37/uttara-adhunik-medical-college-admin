@@ -4,14 +4,9 @@ import {
 } from "next/server";
 
 import { connectToDB } from "@/lib/connectToDB";
-
 import {
   FacilitiesModel,
 } from "@/lib/models/Facilities";
-
-// =========================================================
-// RUNTIME
-// =========================================================
 
 export const runtime = "nodejs";
 
@@ -20,10 +15,16 @@ export const runtime = "nodejs";
 // =========================================================
 
 const allowedOrigins = [
+  process.env.CLIENT_URL,
+  process.env.NEXT_PUBLIC_CLIENT_URL,
+
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:3002",
-];
+].filter(
+  (value): value is string =>
+    Boolean(value)
+);
 
 function getCorsHeaders(
   origin: string | null
@@ -33,13 +34,16 @@ function getCorsHeaders(
 
   if (
     origin &&
-    allowedOrigins.includes(
-      origin
-    )
+    allowedOrigins.includes(origin)
   ) {
     headers.set(
       "Access-Control-Allow-Origin",
       origin
+    );
+
+    headers.set(
+      "Vary",
+      "Origin"
     );
   }
 
@@ -87,9 +91,9 @@ function jsonResponse(
 function getErrorMessage(
   error: unknown
 ): string {
-  /* =====================================================
-     MONGOOSE VALIDATION ERROR
-  ===================================================== */
+  // =====================================================
+  // MONGOOSE VALIDATION ERROR
+  // =====================================================
 
   if (
     typeof error === "object" &&
@@ -129,9 +133,9 @@ function getErrorMessage(
     }
   }
 
-  /* =====================================================
-     INVALID OBJECT ID
-  ===================================================== */
+  // =====================================================
+  // INVALID OBJECT ID
+  // =====================================================
 
   if (
     typeof error === "object" &&
@@ -143,9 +147,9 @@ function getErrorMessage(
     return "Invalid Facilities ID.";
   }
 
-  /* =====================================================
-     DUPLICATE
-  ===================================================== */
+  // =====================================================
+  // DUPLICATE
+  // =====================================================
 
   if (
     typeof error === "object" &&
@@ -156,9 +160,9 @@ function getErrorMessage(
     return "Duplicate Facilities data.";
   }
 
-  /* =====================================================
-     NORMAL ERROR
-  ===================================================== */
+  // =====================================================
+  // NORMAL ERROR
+  // =====================================================
 
   if (
     error instanceof Error
@@ -226,23 +230,22 @@ export async function GET(
     );
 
   try {
-    /* =====================================================
-       GET ID
-    ===================================================== */
+    // =====================================================
+    // GET ID
+    // =====================================================
 
     const {
       id,
     } = await params;
 
-    /* =====================================================
-       VALIDATE ID
-    ===================================================== */
+    // =====================================================
+    // VALIDATE ID
+    // =====================================================
 
     if (!isValidId(id)) {
       return jsonResponse(
         {
           success: false,
-
           message:
             "Invalid Facilities ID.",
         },
@@ -251,30 +254,29 @@ export async function GET(
       );
     }
 
-    /* =====================================================
-       DATABASE
-    ===================================================== */
+    // =====================================================
+    // DATABASE
+    // =====================================================
 
     await connectToDB();
 
-    /* =====================================================
-       FIND FACILITIES
-    ===================================================== */
+    // =====================================================
+    // FIND FACILITIES
+    // =====================================================
 
     const facilities =
       await FacilitiesModel
         .findById(id)
         .lean();
 
-    /* =====================================================
-       NOT FOUND
-    ===================================================== */
+    // =====================================================
+    // NOT FOUND
+    // =====================================================
 
     if (!facilities) {
       return jsonResponse(
         {
           success: false,
-
           message:
             "Facilities section not found.",
         },
@@ -283,9 +285,9 @@ export async function GET(
       );
     }
 
-    /* =====================================================
-       SORT FACILITIES
-    ===================================================== */
+    // =====================================================
+    // SORT FACILITIES
+    // =====================================================
 
     const sortedFacilities =
       [
@@ -296,9 +298,9 @@ export async function GET(
           a.order - b.order
       );
 
-    /* =====================================================
-       SUCCESS
-    ===================================================== */
+    // =====================================================
+    // SUCCESS
+    // =====================================================
 
     return jsonResponse(
       {
@@ -323,7 +325,6 @@ export async function GET(
     return jsonResponse(
       {
         success: false,
-
         message:
           getErrorMessage(error),
       },
@@ -354,23 +355,22 @@ export async function PUT(
     );
 
   try {
-    /* =====================================================
-       GET ID
-    ===================================================== */
+    // =====================================================
+    // GET ID
+    // =====================================================
 
     const {
       id,
     } = await params;
 
-    /* =====================================================
-       VALIDATE ID
-    ===================================================== */
+    // =====================================================
+    // VALIDATE ID
+    // =====================================================
 
     if (!isValidId(id)) {
       return jsonResponse(
         {
           success: false,
-
           message:
             "Invalid Facilities ID.",
         },
@@ -379,22 +379,22 @@ export async function PUT(
       );
     }
 
-    /* =====================================================
-       DATABASE
-    ===================================================== */
+    // =====================================================
+    // DATABASE
+    // =====================================================
 
     await connectToDB();
 
-    /* =====================================================
-       BODY
-    ===================================================== */
+    // =====================================================
+    // BODY
+    // =====================================================
 
     const body =
       await request.json();
 
-    /* =====================================================
-       BASIC VALIDATION
-    ===================================================== */
+    // =====================================================
+    // BASIC VALIDATION
+    // =====================================================
 
     if (
       !body ||
@@ -404,7 +404,6 @@ export async function PUT(
       return jsonResponse(
         {
           success: false,
-
           message:
             "Invalid request body.",
         },
@@ -413,9 +412,9 @@ export async function PUT(
       );
     }
 
-    /* =====================================================
-       TAGLINE
-    ===================================================== */
+    // =====================================================
+    // TAGLINE
+    // =====================================================
 
     if (
       typeof body.tagline !==
@@ -425,7 +424,6 @@ export async function PUT(
       return jsonResponse(
         {
           success: false,
-
           message:
             "Facilities tagline is required.",
         },
@@ -434,9 +432,9 @@ export async function PUT(
       );
     }
 
-    /* =====================================================
-       TITLE
-    ===================================================== */
+    // =====================================================
+    // TITLE
+    // =====================================================
 
     if (
       typeof body.title !==
@@ -446,7 +444,6 @@ export async function PUT(
       return jsonResponse(
         {
           success: false,
-
           message:
             "Facilities title is required.",
         },
@@ -455,9 +452,9 @@ export async function PUT(
       );
     }
 
-    /* =====================================================
-       IMAGE
-    ===================================================== */
+    // =====================================================
+    // IMAGE
+    // =====================================================
 
     if (
       typeof body.image !==
@@ -467,7 +464,6 @@ export async function PUT(
       return jsonResponse(
         {
           success: false,
-
           message:
             "Facilities image is required.",
         },
@@ -476,9 +472,9 @@ export async function PUT(
       );
     }
 
-    /* =====================================================
-       FACILITIES ARRAY
-    ===================================================== */
+    // =====================================================
+    // FACILITIES ARRAY
+    // =====================================================
 
     if (
       !Array.isArray(
@@ -490,7 +486,6 @@ export async function PUT(
       return jsonResponse(
         {
           success: false,
-
           message:
             "At least one facility is required.",
         },
@@ -499,9 +494,9 @@ export async function PUT(
       );
     }
 
-    /* =====================================================
-       VALIDATE EACH FACILITY
-    ===================================================== */
+    // =====================================================
+    // VALIDATE EACH FACILITY
+    // =====================================================
 
     for (
       let index = 0;
@@ -523,7 +518,6 @@ export async function PUT(
         return jsonResponse(
           {
             success: false,
-
             message:
               `Facility ${number} is invalid.`,
           },
@@ -540,7 +534,6 @@ export async function PUT(
         return jsonResponse(
           {
             success: false,
-
             message:
               `Facility ${number} name is required.`,
           },
@@ -557,7 +550,6 @@ export async function PUT(
         return jsonResponse(
           {
             success: false,
-
             message:
               `Facility ${number} title is required.`,
           },
@@ -574,7 +566,6 @@ export async function PUT(
         return jsonResponse(
           {
             success: false,
-
             message:
               `Facility ${number} description is required.`,
           },
@@ -584,9 +575,9 @@ export async function PUT(
       }
     }
 
-    /* =====================================================
-       CLEAN DATA
-    ===================================================== */
+    // =====================================================
+    // CLEAN DATA
+    // =====================================================
 
     const cleanedFacilities =
       body.facilities.map(
@@ -624,7 +615,8 @@ export async function PUT(
               ? facility.detailsLink.trim()
               : "#",
 
-          order: index,
+          order:
+            index,
 
           isActive:
             facility.isActive ??
@@ -632,9 +624,9 @@ export async function PUT(
         })
       );
 
-    /* =====================================================
-       UPDATE
-    ===================================================== */
+    // =====================================================
+    // UPDATE
+    // =====================================================
 
     const updatedFacilities =
       await FacilitiesModel.findByIdAndUpdate(
@@ -672,14 +664,13 @@ export async function PUT(
         },
         {
           new: true,
-
           runValidators: true,
         }
       );
 
-    /* =====================================================
-       NOT FOUND
-    ===================================================== */
+    // =====================================================
+    // NOT FOUND
+    // =====================================================
 
     if (
       !updatedFacilities
@@ -687,7 +678,6 @@ export async function PUT(
       return jsonResponse(
         {
           success: false,
-
           message:
             "Facilities section not found.",
         },
@@ -696,17 +686,15 @@ export async function PUT(
       );
     }
 
-    /* =====================================================
-       SUCCESS
-    ===================================================== */
+    // =====================================================
+    // SUCCESS
+    // =====================================================
 
     return jsonResponse(
       {
         success: true,
-
         message:
           "Facilities section updated successfully.",
-
         data:
           updatedFacilities,
       },
@@ -722,12 +710,11 @@ export async function PUT(
     return jsonResponse(
       {
         success: false,
-
         message:
           getErrorMessage(error),
 
         ...(process.env.NODE_ENV !==
-          "production"
+        "production"
           ? {
               error:
                 error instanceof Error
@@ -763,23 +750,22 @@ export async function DELETE(
     );
 
   try {
-    /* =====================================================
-       GET ID
-    ===================================================== */
+    // =====================================================
+    // GET ID
+    // =====================================================
 
     const {
       id,
     } = await params;
 
-    /* =====================================================
-       VALIDATE ID
-    ===================================================== */
+    // =====================================================
+    // VALIDATE ID
+    // =====================================================
 
     if (!isValidId(id)) {
       return jsonResponse(
         {
           success: false,
-
           message:
             "Invalid Facilities ID.",
         },
@@ -788,24 +774,24 @@ export async function DELETE(
       );
     }
 
-    /* =====================================================
-       DATABASE
-    ===================================================== */
+    // =====================================================
+    // DATABASE
+    // =====================================================
 
     await connectToDB();
 
-    /* =====================================================
-       DELETE
-    ===================================================== */
+    // =====================================================
+    // DELETE
+    // =====================================================
 
     const deletedFacilities =
       await FacilitiesModel.findByIdAndDelete(
         id
       );
 
-    /* =====================================================
-       NOT FOUND
-    ===================================================== */
+    // =====================================================
+    // NOT FOUND
+    // =====================================================
 
     if (
       !deletedFacilities
@@ -813,7 +799,6 @@ export async function DELETE(
       return jsonResponse(
         {
           success: false,
-
           message:
             "Facilities section not found.",
         },
@@ -822,14 +807,13 @@ export async function DELETE(
       );
     }
 
-    /* =====================================================
-       SUCCESS
-    ===================================================== */
+    // =====================================================
+    // SUCCESS
+    // =====================================================
 
     return jsonResponse(
       {
         success: true,
-
         message:
           "Facilities section deleted successfully.",
       },
@@ -845,7 +829,6 @@ export async function DELETE(
     return jsonResponse(
       {
         success: false,
-
         message:
           getErrorMessage(error),
       },
