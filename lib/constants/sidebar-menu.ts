@@ -82,6 +82,7 @@ export const sidebarMenu = [
       {
         title: "Overview",
         href: "/dashboard/about/overview",
+        
       },
       {
         title: "History",
