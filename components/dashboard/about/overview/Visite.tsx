@@ -1875,7 +1875,7 @@ export default function Visite() {
                     <div className="flex flex-col justify-center">
 
                       <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[#008B45]">
-                        About UAMC
+                        Visite UAMC
                       </p>
 
                       <h3 className="font-serif text-3xl font-bold leading-tight text-slate-900 sm:text-4xl">
