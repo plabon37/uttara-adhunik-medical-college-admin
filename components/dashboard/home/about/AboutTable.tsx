@@ -82,6 +82,7 @@ export default function AboutTable({
           ================================================= */}
 
           <thead>
+            <span className="sr-only">About Section</span>
             <tr className="border-b border-slate-200 bg-slate-50 text-left">
               <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-slate-600">
                 Logo
