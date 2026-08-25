@@ -4,7 +4,6 @@ export default function NewsletterPage() {
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-[1400px]">
-
         {/* =================================================
             PAGE HEADER
         ================================================= */}
@@ -19,8 +18,8 @@ export default function NewsletterPage() {
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-            View the email addresses submitted by
-            visitors through the website newsletter.
+            View and manage the email addresses submitted by visitors through
+            the website newsletter subscription form.
           </p>
         </div>
 
