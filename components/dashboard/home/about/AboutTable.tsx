@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import AboutTableRow, {
-  AboutData,
-} from "./AboutTableRow";
+import { Search } from "lucide-react";
+
+import AboutTableRow, { AboutData } from "./AboutTableRow";
 
 interface AboutTableProps {
   about: AboutData | null;
@@ -16,91 +16,73 @@ export default function AboutTable({
 }: AboutTableProps) {
   const [search, setSearch] = useState("");
 
-  // =========================================
-  // FILTER ABOUT
-  // =========================================
+  // =================================================
+  // FILTER ABOUT DATA
+  // =================================================
 
   const filteredAbout = useMemo(() => {
     if (!about) {
       return null;
     }
 
-    const searchValue = search
-      .trim()
-      .toLowerCase();
+    const searchValue = search.trim().toLowerCase();
 
     if (!searchValue) {
       return about;
     }
 
-    const matches =
-      about.title
-        ?.toLowerCase()
-        .includes(searchValue) ||
-      about.highlightText
-        ?.toLowerCase()
-        .includes(searchValue) ||
-      about.tagline
-        ?.toLowerCase()
-        .includes(searchValue) ||
-      about.missionTitle
-        ?.toLowerCase()
-        .includes(searchValue) ||
-      about.visionTitle
-        ?.toLowerCase()
-        .includes(searchValue);
+    const searchableFields = [
+      about.title,
+      about.highlightText,
+      about.tagline,
+      about.missionTitle,
+      about.visionTitle,
+    ];
+
+    const matches = searchableFields.some((field) =>
+      field?.toLowerCase().includes(searchValue)
+    );
 
     return matches ? about : null;
   }, [about, search]);
 
+  const hasSearch = search.trim().length > 0;
+
   return (
     <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      {/* =========================================
-          SEARCH
-      ========================================= */}
+      {/* =================================================
+          SEARCH BAR
+      ================================================= */}
 
-      <div className="border-b border-slate-200 p-5">
+      <div className="border-b border-slate-200 bg-white p-4 sm:p-5">
         <div className="relative w-full max-w-md">
+          <Search
+            size={18}
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+          />
+
           <input
             type="text"
             value={search}
-            onChange={(event) =>
-              setSearch(event.target.value)
-            }
+            onChange={(event) => setSearch(event.target.value)}
             placeholder="Search About section..."
-            className="
-              h-11
-              w-full
-              rounded-xl
-              border
-              border-slate-200
-              bg-white
-              px-4
-              text-sm
-              text-slate-700
-              outline-none
-              transition
-              placeholder:text-slate-400
-              focus:border-[#008B45]
-              focus:ring-2
-              focus:ring-[#008B45]/10
-            "
+            className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#008B45] focus:ring-2 focus:ring-[#008B45]/10"
           />
         </div>
       </div>
 
-      {/* =========================================
-          RESPONSIVE TABLE
-      ========================================= */}
+      {/* =================================================
+          ABOUT TABLE
+      ================================================= */}
 
       <div className="w-full overflow-x-auto">
         <table className="w-full min-w-[1050px] border-collapse">
-          {/* =========================================
+          {/* =================================================
               TABLE HEADER
-          ========================================= */}
+          ================================================= */}
 
           <thead>
-            <tr className="bg-slate-50 text-left">
+            <tr className="border-b border-slate-200 bg-slate-50 text-left">
               <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-slate-600">
                 Logo
               </th>
@@ -127,9 +109,9 @@ export default function AboutTable({
             </tr>
           </thead>
 
-          {/* =========================================
+          {/* =================================================
               TABLE BODY
-          ========================================= */}
+          ================================================= */}
 
           <tbody>
             {filteredAbout ? (
@@ -139,19 +121,16 @@ export default function AboutTable({
               />
             ) : (
               <tr>
-                <td
-                  colSpan={6}
-                  className="px-6 py-12 text-center"
-                >
+                <td colSpan={6} className="px-6 py-14 text-center">
                   <p className="text-sm font-medium text-slate-600">
                     {about
-                      ? "No About section found."
+                      ? "No matching About section found."
                       : "No About section available."}
                   </p>
 
-                  {search && about && (
+                  {hasSearch && about && (
                     <p className="mt-1 text-xs text-slate-400">
-                      Try a different search term.
+                      Try searching with a different keyword.
                     </p>
                   )}
                 </td>
